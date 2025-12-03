@@ -1,5 +1,5 @@
-*El Readme en Español se encuentra en la carpeta Español*
----
+*El Readme en Español se encuentra en la carpeta Español*  
+
 *Le readme en français se trouve dans le dossier Français*
 
 # Kairós Framework [v2.5]
@@ -162,42 +162,18 @@ Kairós is a tool for *questioning*, and that includes questioning the tool itse
 
 ## 8. Licensing
 
-### Community License (MIT)
+This repository is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY‑NC‑SA 4.0).
+
 **Free for:**
-- Students and academics
-- Personal projects
-- Open-source projects
-- Non-commercial use
+- Personal, academic, and non-commercial use
+- Students, researchers, and open-source projects
 
-[View full license](./LICENSE)
+[View the full license](./LICENSE)
 
-### Commercial License
-**Required for:**
-- Companies and organizations
-- Revenue-generating services
-- Proprietary products
-- Commercial consulting
+**Commercial Use:**
+Commercial use (companies, revenue-generating services, proprietary products, commercial consulting) requires a separate commercial agreement.
 
-**Payment Options:**
-
-1. **Flat Plan: $2,500 USD/year**
-   - Unlimited commercial use
-   - All revenue streams
-   - No usage reporting required
-
-2. **Revenue Share Model: 15% of revenue**
-   - Minimum annual payment: $2,500 USD
-   - Quarterly reporting required
-   - First $10,000 annual revenue exempt
-
-3. **Custom Enterprise**
-   - Contact for personalized quote
-   - Volume discounts available
-
-[View full commercial terms](./COMMERCIAL_LICENSE)
-
-**To Obtain a Commercial License:**
-📧 Email: kairoscommercial.6gzod@passinbox.com
+See `COMMERCIAL_ACCESS.md` for commercial licensing options, pricing and contact instructions (including the commercial contact email).
 
 ---
 

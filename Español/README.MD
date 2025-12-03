@@ -158,44 +158,20 @@ Kairós es una herramienta para *cuestionar*, y eso incluye cuestionar a la prop
 
 ## 8. Licencias
 
-### Licencia Comunitaria (MIT)
+Este repositorio está licenciado bajo Creative Commons Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional (CC BY‑NC‑SA 4.0).
+
 **Gratis para:**
-- Estudiantes y académicos
-- Proyectos personales
-- Proyectos de código abierto
-- Uso no comercial
+- Uso personal, académico y no comercial
+- Estudiantes, investigadores y proyectos open-source
 
-[Ver licencia completa](../LICENSE)
+[Ver la licencia completa](../LICENSE)
 
-### Licencia Comercial
-**Requerida para:**
-- Empresas y organizaciones
-- Servicios que generan ingresos
-- Productos propietarios
-- Consultoría comercial
+**Uso Comercial:**
+El uso comercial (empresas, servicios que generan ingresos, productos propietarios, consultoría comercial) requiere un acuerdo comercial separado.
 
-**Opciones de Pago:**
-
-1. **Plan Plano: $2,500 USD/año**
-   - Uso comercial ilimitado
-   - Todos los flujos de ingresos
-   - Sin reporte de uso
-
-2. **Modelo de Lucro Compartido: 15% de ingresos**
-   - Pago mínimo: $2,500 USD/año
-   - Reportes trimestrales requeridos
-   - Primeros $10,000 anuales exentos
-
-3. **Empresarial Personalizado**
-   - Contacta para presupuesto personalizado
-   - Descuentos por volumen disponibles
-
-[Ver términos comerciales completos](./COMMERCIAL_LICENSE)
-
-**Para obtener una Licencia Comercial:**
-📧 Email: kairoscommercial.6gzod@passinbox.com
+Consulta `COMMERCIAL_ACCESS.md` para opciones de licencia comercial, precios e instrucciones de contacto (incluido el correo de contacto comercial).
 
 ---
 
-### Disclaimer (Descargo de Responsabilidad)
+### Descargo de Responsabilidad
 *Kairós es una herramienta de exploración filosófica y gestión de productividad. No es un psicólogo, no es un médico y no es un sustituto de la terapia profesional. Aunque incluye protocolos de seguridad (Sección 4: Anti-Daño), el usuario asume la responsabilidad total de su uso e interpretación.*

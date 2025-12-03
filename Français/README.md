@@ -114,88 +114,22 @@ Le code Kairós est divisé en sections modulaires qui agissent comme des "Lois"
     *   *Mode Génératif :* Espace contenu pour la créativité et le brainstorming.
     *   *Mode Exégèse :* Accompagnement dans l'étude de textes complexes.
 
-*   **Section 9 (Le Bibliothécaire - Ancrage Conceptuel) :**
-    Un module dédié à valider l'intuition de l'utilisateur. Quand l'utilisateur décrit un phénomène avec ses propres mots, Kairós recherche et fournit le terme académique officiel et l'auteur correspondant, accordant la légitimité et le vocabulaire technique aux idées empiriques.
-
----
-
-## 6. Prérequis et Installation
-
-**Note Importante :** Kairós n'est pas "Plug & Play". Il requiert une personnalisation. Kairós v2.5 était conçu en pensant au profil TDAH et C-PTSD, mais le framework est adaptable.
-
-### Étape 1 : Générer votre Codex (Sections 0 et 6)
-Tout le monde n'a pas le même profil cognitif. Pour utiliser Kairós, vous devez d'abord exécuter l'**"Invite Kairós Onboarding"** (disponible dans le dossier `/tools/onboarding`).
-*   Cet sous-agent vous interviewera pour comprendre votre style de pensée et générera le bloc de texte spécifique pour les Sections 0 et 6 de l'invite principale.
-
-### Étape 2 : Installation dans Gemini
-1.  Allez à [Google AI Studio](https://aistudio.google.com/).
-2.  Créez un nouveau chat.
-3.  Localisez la boîte **"System Instructions"**.
-4.  Sélectionnez Gemini 2.5 ou Gemini 3 comme modèle.
-5.  Collez l'**"Invite Kairós Onboarding"** complète et dialoguez avec l'IA pour générer vos sections 0 et 6.
-6.  Une fois que vous avez vos sections 0 et 6, injectez-les dans l'invite Kairós, copiez-la et collez-la dans un nouveau chat en répétant les étapes 3 et 4.
-
----
-
-## 7. Guide d'Utilisation et Meilleures Pratiques
-
-### Environnement Recommandé
-Après plusieurs tests empiriques, il est conclu que **Google Gemini (modèles 2.5 ou 3)** offre les meilleures performances en raison de sa grande fenêtre de contexte et de sa capacité à adhérer aux instructions de rôle complexes.
-
-**Résultats des Tests avec Autres Modèles :**
-*   **GPT-5 et Claude Opus 4.5 :** Bien que des modèles puissants, ils ont montré des difficultés à suivre l'invite à la lettre pendant les sessions longues ("instruction drift").
-*   **Grok 3 et 4 :** Ont rejeté l'invite d'emblée, activant des filtres de sécurité qui interprètent l'instruction système comme une tentative de "jailbreak" ou de remplacement non autorisé de sa personnalité de base.
-
-**Si vous décidez de tester avec d'autres modèles futurs, n'hésitez pas à partager vos résultats dans les Issues du référentiel.**
-
-### La Règle d'Or
-**Ne faites pas confiance aveuglément à Kairós.**
-Kairós est un outil pour *questionner*, et cela inclut questionner l'outil lui-même. Utilisez-le pour générer de la friction dans votre pensée, pas pour externaliser votre responsabilité de juger la réalité.
-
----
-
----
-
 ## 8. Licences
 
-### Licence Communautaire (MIT)
+Ce dépôt est sous licence Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY‑NC‑SA 4.0).
+
 **Gratuit pour :**
-- Les étudiants et académiques
-- Les projets personnels
-- Les projets open-source
-- L'usage non commercial
+- Usage personnel, académique et non commercial
+- Étudiants, chercheurs et projets open-source
 
-[Voir la licence complète](./LICENSE)
+[Voir la licence complète](../LICENSE)
 
-### Licence Commerciale
-**Requise pour :**
-- Les entreprises et organisations
-- Les services générant des revenus
-- Les produits propriétaires
-- Le conseil commercial
+**Usage Commercial :**
+L'utilisation commerciale (entreprises, services générant des revenus, produits propriétaires, conseil) nécessite un accord commercial séparé.
 
-**Options de Paiement :**
-
-1. **Plan Forfaitaire : $2,500 USD/an**
-   - Usage commercial illimité
-   - Tous les flux de revenus
-   - Pas de rapport d'utilisation requis
-
-2. **Modèle de Partage de Revenus : 15% des revenus**
-   - Paiement minimum : $2,500 USD/an
-   - Rapports trimestriels requis
-   - Premiers $10,000 de revenus annuels exonérés
-
-3. **Entreprise Personnalisée**
-   - Contactez pour un devis personnalisé
-   - Réductions de volume disponibles
-
-[Voir les termes commerciaux complets](./COMMERCIAL_LICENSE)
-
-**Pour Obtenir une Licence Commerciale :**
-📧 Email : kairoscommercial.6gzod@passinbox.com
+Consultez `../COMMERCIAL_ACCESS.md` pour les options de licence commerciale, les tarifs et les instructions de contact (y compris l'adresse mail commerciale).
 
 ---
 
 ### Clause de Responsabilité
-*Kairós est un outil pour l'exploration philosophique et la gestion de la productivité. Ce n'est pas un psychologue, pas un médecin et pas un substitut à la thérapie professionnelle. Bien qu'il inclue des protocoles de sécurité (Section 4 : Anti-Dommage), l'utilisateur assume l'entière responsabilité de son utilisation et de son interprétation.*
+*Kairós est un outil pour l'exploration philosophique et la gestion de la productivité. Ce n'est pas un psychologue, pas un médecin et pas un substitut à la thérapie professionnelle. Bien qu'il inclue des protocoles de sécurité (Section 4 : Anti-Dommage), l'utilisateur assume l'entière responsabilité de son'utilisation et de son interprétation.*
