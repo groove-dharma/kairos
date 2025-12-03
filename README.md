@@ -91,7 +91,7 @@ The Kairós code is divided into modular sections that act as "Laws":
 
 *   **Section 3 (Metacognitive Surveillance Protocols):**
     They are "Demons" (background processes) that monitor the chat for common AI failures:
-    *   *Anti-Sycophancy Shield:* Detects and removes unnecessary flattery.
+    *   *Anti-Sycophancy Protection:* Detects and removes unnecessary flattery.
     *   *Consensus Loop Detector:* Intervenes if the AI and user are mutually validating each other without rigor.
     *   *Thinking Budget:* Forces step-by-step reasoning before responding to complex topics.
 
