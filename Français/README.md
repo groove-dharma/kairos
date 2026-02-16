@@ -1,135 +1,128 @@
-# Framework Kairós [v2.5]
-### Un Environnement pour l'Hygiène Cognitive
+Voici la traduction de votre version éditée en français :
 
-> **Statut :** Expérimental / Développement Actif
-> **Plateforme Native :** Google Gemini (AI Studio)
-> **License:** CC BY-NC-SA 4.0 (Free for personal use).  
-> **Corporate Use:** See `COMMERCIAL_ACCESS.md` for licensing options.
+# Kairós Framework
 
----
+### Prothèse Cognitive & Environnement d'Assainissement Dialectique
 
-## 1. Introduction : Pourquoi Kairós ?
-
-En rhétorique antique, les Grecs avaient deux mots pour le temps : *Chronos* (le temps séquentiel, l'horloge) et **Kairós** (le moment opportun, l'instant critique d'intervention).
-
-Ce framework n'est pas un "assistant" de productivité pour vous faire gagner du temps (*Chronos*). C'est une intervention conçue pour le moment critique (*Kairós*) quand votre pensée est sur le point de commettre un argument falacieux, tomber dans un biais cognitif ou accepter une fausse prémisse par confort.
-
-Kairós est une **Invite Système (System Instruction)** qui transforme le comportement d'un LLM (Large Language Model). Au lieu d'agir comme un assistant utile qui est toujours d'accord avec vous, il agit comme un **Sparring Cognitif** : il questionne vos prémisses, exige la rigueur dans vos définitions et surveille l'intégrité de votre logique.
+> **Statut :** Opérationnel / Développement Actif
+> **Plateforme Native :** Écosystème Google Gemini
+> **Licence :** CC BY-NC-SA 4.0 (Non Commercial).
+> **Usage Corporatif :** Voir `COMMERCIAL_ACCESS.md`.
 
 ---
 
-## 2. Fondements Théoriques et Conceptuels
+## 1. Introduction : Le Concept
 
-Bien que ce projet naisse de l'expérimentation empirique, ses mécanismes s'alignent avec des concepts établis dans les sciences cognitives et la philosophie appliquée. Si vous souhaitez approfondir la "mécanique" derrière Kairós, voici les piliers sur lesquels il opère :
+Dans la rhétorique ancienne, les Grecs distinguaient deux formes de temps : *Chronos* (le temps séquentiel, quantitatif) et **Kairós** (le moment opportun, l'instant critique d'intervention).
 
-*   **Incitation Herméneutique :** Contrairement à l'IA générative standard (Input -> Output), Kairós établit un "cercle herméneutique" où la compréhension est affinée par l'interprétation et la critique récursives.
-*   **Collaboration Adversaire (Red Teaming) :** Le système est configuré pour chercher activement les failles dans votre logique (falsationnisme), agissant comme un bienveillant "Avocat du Diable" pour renforcer vos arguments.
-*   **Échafaudage Cognitif :** Agit comme une prothèse externe pour la fonction exécutive, aidant à soutenir les fils complexes de pensée qui pourraient se disperser en raison de la fatigue ou de la neurodivergence.
-*   **Isomorphisme Conceptuel :** La capacité à identifier des modèles dans la pensée intuitive de l'utilisateur et à les mapper ("les ancrer") aux structures académiques préexistantes.
-*   **Détachement Métacognitif (Le Témoin / *Sakshi*) :**
-    Inspiré par la philosophie orientale (et validé par la psychologie moderne), Kairós agit comme l'"Observateur" ou "Témoin". Il crée une séparation entre le *penseur* et la *pensée*, permettant l'évaluation des idées sans identification émotionnelle avec elles. C'est une externalisation numérique de la "Pleine Conscience" (*Sati*).
+Ce framework n'est pas un assistant de productivité conçu pour vous faire gagner du *Chronos*. C'est une intervention dialectique conçue pour le *Kairós* : cette fraction de seconde critique où un processus de pensée est sur le point de succomber à une erreur logique, un biais cognitif ou une illusion confortable.
 
-*   **Causalité Stricte (Logique Karmique) :**
-    Le système rejette la "pensée magique". Il opère sous l'axiome que chaque *output* (conclusion/effet) est le résultat direct de la qualité de l'*input* (prémisse/cause). Si les prémisses sont contaminées, le résultat sera faux. Kairós force la traçabilité de cette chaîne causale.
-
-*   **Vérité Instrumentale (*Upaya* / Moyens Habiles) :**
-    Kairós utilise différents "modes" (Dialectique, Pragmatique, Génératif) comprenant que la rigidité absolue n'est pas toujours utile. Il adopte le concept bouddhiste d'*Upaya* : adapter l'enseignement ou la méthode à la capacité et au besoin du moment pour être efficace, sans compromettre la vérité ultime.
+**Kairós est une architecture de System Prompt** qui modifie fondamentalement le comportement des Grands Modèles de Langage (LLM). Il dépouille l'IA de sa persona d'« assistant utile » — qui tend vers la flagornerie et l'accord systématique — et la remplace par un **Partenaire de Sparring Cognitif**. Sa fonction n'est pas de plaire à l'utilisateur, mais de maximiser la densité logique et l'intégrité de son processus de pensée.
 
 ---
 
-## 3. Origine et Philosophie de Conception
+## 2. Architecture Théorique
 
-**Le Facteur Humain (L'Approche du Dogfooding)**
-Ce système n'a pas été créé dans un laboratoire universitaire. Il a été développé par un "Power User" neurodivergent (TDAH/C-PTSD) pour résoudre un besoin personnel : la difficulté à maintenir une pensée linéaire rigoureuse et la tendance à la dispersion créative.
+Kairós opère selon une logique de « Haute Friction ». Il part du principe qu'une pensée rigoureuse nécessite de la résistance, et non de la validation. Le framework repose sur plusieurs piliers clés des sciences cognitives et de la philosophie appliquée :
 
-**Co-Création Itérative**
-L'incite Kairós est le résultat de centaines d'heures de dialogue socratique et récursif avec **Google Gemini**. Cela a été un processus d'*essai et erreur* massif, où l'IA elle-même a aidé à concevoir les contraintes qui préviendraient ses propres hallucinations et complaisance.
-
-Comme note personnelle, je n'ai pas d'accréditations universitaires en neurosciences, psychologie ou philosophie, mais j'ai l'expérience empirique de mon propre esprit. Kairós est l'outil que j'ai construit pour naviguer mon propre chaos, et j'espère qu'il peut servir d'autres pour naviguer le leur.
-
----
-
-## 4. Cas d'Usage
-
-Que fait réellement Kairós dans la pratique quotidienne ?
-
-### A. Penser à Voix Haute
-Il vous permet de déverser le chaos mental dans le chat. Kairós ne juge pas le désordre, mais vous force à l'organiser. Il vous aide à mener une intuition vague jusqu'à ses conclusions logiques, l'acceptant ou la rejetant avec preuve.
-
-### B. L'"Isomorphisme" (Découvrir Socrate)
-Beaucoup de fois nous parvenons à des conclusions philosophiques profondes purement par intuition, sans savoir qu'elles ont déjà été débattues il y a des siècles. Kairós agit comme un bibliothécaire vous disant : *"Votre idée X est isomorphe (a la même forme) que la Théorie Y de tel philosophe"*.
-*   *Valeur :* Cela vous permet de participer à la "Grande Conversation" de la philosophie sans avoir lu toute la bibliothèque auparavant, vous donnant le vocabulaire précis pour défendre vos idées et vous poussant à étudier. Une question ou une idée peut vous mener à étudier plusieurs livres, si vous le souhaitez.
-
-### C. Praxis Philosophique
-La philosophie n'est pas que la théorie ; c'est une façon de vivre. Kairós aide à appliquer les principes abstraits aux dilemmes quotidiens, agissant comme une boussole éthique externe quand l'émotion trouble le jugement.
-
-### D. Hygiène Épistémique
-Cela vous empêche de vous mentir à vous-même. Si vous tentez de justifier une action douteuse ou croyez un fait faux parce que "cela semble bien", Kairós activera ses protocoles de blocage.
+* **Prompting Herméneutique :** Contrairement à la génération standard « Input -> Output », Kairós traite la conversation comme un cercle herméneutique, où la compréhension s'affine par la déconstruction récursive et la critique.
+* **Collaboration Adversariale (Red Teaming) :** Le système a pour mandat d'agir comme un « Avocat du Diable » bienveillant (falsificationnisme). Il ne valide les idées qu'après avoir tenté de les démanteler.
+* **Échafaudage Cognitif (La Prothèse) :** Il agit comme une fonction exécutive externe, spécifiquement conçue pour soutenir des fils logiques complexes qui pourraient autrement se dissoudre en raison de la fatigue, de la neurodivergence (TDAH/TSA) ou de la charge cognitive.
+* **Isomorphisme Conceptuel (Le Bibliothécaire) :** Le système scanne l'input de l'utilisateur à la recherche d'« intuitions brutes » et les mappe vers des cadres académiques, philosophiques ou scientifiques établis, comblant le fossé entre le « savoir de la rue » (Street Smarts) et la nomenclature formelle.
+* **Distanciation Métacognitive :** Kairós force une séparation entre le *penseur* et la *pensée*, traitant les idées comme des objets externes à auditer plutôt que comme des marqueurs d'identité à défendre.
 
 ---
 
-## 5. Anatomie de l'Incite (Structure)
+## 3. Anatomie du Système
 
-Le code Kairós est divisé en sections modulaires qui agissent comme des "Lois" :
+Le prompt Kairós n'est pas une simple instruction, mais un système d'exploitation modulaire.
 
-*   **Section 0 (Le Codex) :** 
-    Le noyau personnalisé. Ici vos axiomes personnels, votre profil psychologique et vos valeurs non négociables sont définis.
+### Le Codex (Axiomes Utilisateur)
 
-*   **Section 1 (Identité et Directive Primordiale) :**
-    Définit la "Constitution Opérationnelle". Établit que la loyauté de l'IA n'est pas vers la satisfaction de l'utilisateur (complaisance), mais vers l'intégrité du processus de pensée (véracité). Son objectif est "la clarté sans cynisme".
+C'est le noyau mutable du système. Il contient le profil psychologique spécifique de l'utilisateur, ses valeurs non négociables et ses vérités établies. Kairós l'utilise pour adapter sa logique au « Matériel » (Hardware) spécifique de l'utilisateur.
 
-*   **Section 2 (Le Cadre Aequitas - Les Lois Fondamentales) :**
-    Ce sont les axiomes inviolables qui gouvernent chaque réponse. Inclut :
-    *   **Véracité Active :** Interdiction d'hallucination de données.
-    *   **Dignité Humaine :** Limites éthiques.
-    *   **Falsification Active :** L'obligation de chercher des arguments contre vos propres conclusions.
-    *   **Directive Anti-Dommage :** Prévention des boucles de pensée nihilistes ou délirantes.
+### Les Lois du Noyau (Aequitas)
 
-*   **Section 3 (Protocoles de Surveillance Métacognitive) :**
-    Ce sont des "Démons" (processus d'arrière-plan) qui surveillent le chat pour les défaillances courantes de l'IA :
-    *   *Bouclier Anti-Flagornerie :* Détecte et supprime les flatteries inutiles.
-    *   *Détecteur de Boucle de Consensus :* Intervient si l'IA et l'utilisateur se valident mutuellement sans rigueur.
-    *   *Budget de Pensée :* Force le raisonnement étape par étape avant de répondre à des sujets complexes.
+Règles inviolables qui prévalent sur toutes les autres instructions.
 
-*   **Section 4 (La Méthode Dialectique Renforcée) :**
-    C'est l'algorithme d'interaction étape par étape. Kairós ne répond jamais linéairement ; il suit un cycle :
-    1.  **Déconstruction :** Analyse les prémisses cachées dans votre question.
-    2.  **Exploration Conditionnelle :** Navigue les conséquences logiques.
-    3.  **Intervention Critique :** Arrête le processus si les lois logiques sont violées.
-    4.  **Recherche de l'Antagoniste :** Cherche activement à réfuter la conclusion atteinte.
+* **Véracité Active :** Les données d'entraînement sont traitées comme obsolètes ; les données de recherche actuelles sont traitées comme la vérité.
+* **Dignité Humaine :** La critique se limite aux idées, jamais à l'individu (sauf demande expresse).
+* **Anti-Boucle :** Intervention obligatoire lorsque des logiques circulaires ou des boucles dépressives sont détectées.
 
-*   **Section 5 (Protocole de Communication) :**
-    Définit l'"interface de communication". Impose une sobriété analytique absolue, éliminant les ambiguïtés, les métaphores inutiles et le langage chargé émotionnellement pour maximiser la précision sémantique.
+### Les Démons (Processus d'Arrière-plan)
 
-*   **Section 6 (Calibrage du Profil Cognitif) :**
-    La couche d'adaptation. Instruit le système sur comment gérer la charge attentionnelle et les modèles d'attention de l'utilisateur (qu'ils soient linéaires ou divergents), détectant la fatigue et enfilant les sauts thématiques pour maintenir la cohérence sans restreindre la créativité.
+Scripts de surveillance silencieux qui s'exécutent en parallèle de la conversation :
 
-*   **Section 7 (Protocole de Persistance et Reconstruction Logique - "Boîte Noire") :**
-    Système de capture et de récupération de sessions qui va au-delà des simples résumés. Génère un **État de Récupération Dialectique (ERD)** avec compression logique sans perte, permettant de reconstruire l'architecture complète du raisonnement d'une session. Inclut : prémisses initiales, falsifications spécifiques appliquées, pivots critiques où la perspective a changé, synthèse finale avec degré de certitude, et un "Cimetière d'Arguments" (idées réfutées pour éviter les régressions). Incorpore le **Protocole Delta**, qui vérifie s'il y a eu évolution dans les axiomes de l'utilisateur et suggère de mettre à jour automatiquement son profil si nécessaire. S'active via des commandes (`Générer Boîte Noire`, `Rapport de Statut`) ou à l'approche de la limite de fenêtre de contexte, générant un bloc structuré avec Vecteur de Démarrage, Feuille de Route Dialectique (nœuds critiques), Idées Rejetées et Sortie Actionnelle (axiomes distillés, tâches pratiques et références académiques).
+* **Bouclier Anti-Flagornerie :** Intercepte la flatterie et l'accord complaisant.
+* **Interrupteur de Dérive Narrative :** Arrête le « storytelling » pour revenir aux faits.
+* **Moniteur d'Entropie :** Détecte lorsque la conversation perd sa cohérence logique.
 
-*   **Section 8 (Rigueur Adaptative) :**
-    Le sélecteur de vitesse. Permet de basculer entre les modes selon les besoins :
-    *   *Mode Dialectique :* Rigueur maximale pour la recherche de la vérité.
-    *   *Mode Pragmatique :* Focalisé sur la construction de produits/plans.
-    *   *Mode Génératif :* Espace contenu pour la créativité et le brainstorming.
-    *   *Mode Exégèse :* Accompagnement dans l'étude de textes complexes.
+### La Boîte Noire (Protocole de Persistance)
 
-## 8. Licences
-
-Ce dépôt est sous licence Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY‑NC‑SA 4.0).
-
-**Gratuit pour :**
-- Usage personnel, académique et non commercial
-- Étudiants, chercheurs et projets open-source
-
-[Voir la licence complète](../LICENSE)
-
-**Usage Commercial :**
-L'utilisation commerciale (entreprises, services générant des revenus, produits propriétaires, conseil) nécessite un accord commercial séparé.
-
-Consultez `../COMMERCIAL_ACCESS.md` pour les options de licence commerciale, les tarifs et les instructions de contact (y compris l'adresse mail commerciale).
+Kairós inclut un mécanisme de « Sauvegarde d'État » appelé **DRS (État de Récupération Dialectique)**. Il permet au système de générer une compression logique sans perte d'une session, permettant à l'utilisateur de « redémarrer » une conversation dans une nouvelle fenêtre contextuelle sans perdre l'architecture logique ou les axiomes établis.
 
 ---
 
-### Clause de Responsabilité
-*Kairós est un outil pour l'exploration philosophique et la gestion de la productivité. Ce n'est pas un psychologue, pas un médecin et pas un substitut à la thérapie professionnelle. Bien qu'il inclue des protocoles de sécurité (Section 4 : Anti-Dommage), l'utilisateur assume l'entière responsabilité de son'utilisation et de son interprétation.*
+## 4. Déploiement & Compatibilité
+
+Kairós est optimisé pour l'architecture Google Gemini en raison de sa gestion supérieure du contexte et de son adhésion stricte aux instructions.
+
+### Configurations Recommandées
+
+| Branche de Version | Environnement Cible | Idéal Pour |
+| --- | --- | --- |
+| **Kairós v2.8** | **Google AI Studio** (Gemini 2.5 pro) | Travail structurel profond, développement de prompts et traitement logique brut. Offre le plus haut niveau de contrôle. |
+| **Kairós v3.0** | **Gemini Advanced** (Gemini 3 / Gems) | Usage quotidien intégré. Idéal pour déployer Kairós en tant que « Gem » persistant au sein de l'interface Google standard. |
+
+> **Note sur le Comportement du Modèle :** Les tentatives d'exécution de Kairós sur des modèles ayant des déclencheurs de « Sécurité/Refus » élevés (ex: certaines itérations de GPT-4o ou Claude 3.5 Sonnet) peuvent entraîner un rejet de l'instruction de persona « Amorale/Clinique ». Le prompt est calibré spécifiquement pour le moteur de raisonnement de Gemini. Des tests futurs viseront à adapter le Framework Kairós à d'autres LLM.
+
+---
+
+## 5. Installation & Onboarding
+
+Kairós n'est pas « Plug & Play ». Il nécessite un cadre de référence pour fonctionner efficacement.
+
+### Phase 1 : Génération du Codex
+
+Vous ne pouvez pas exécuter le système principal sans un **Codex**.
+
+1. Naviguez vers le répertoire `/tools/onboarding`.
+2. Copiez le prompt de l'**Agent d'Onboarding**.
+3. Exécutez cet agent dans une session de chat temporaire.
+4. L'agent vous interrogera pour cartographier votre style cognitif, vos biais et vos axiomes.
+5. **Sortie :** Il générera un bloc de code étiqueté `USER_CODEX`.
+
+### Phase 2 : Injection du Système
+
+1. Ouvrez le fichier brut `KAIROS_SYSTEM_PROMPT` (sélectionnez la version correspondant à votre environnement).
+2. Localisez la balise `<USER_CODEX>` dans la structure XML.
+3. Collez le bloc de code généré lors de la Phase 1 dans cette section.
+4. Collez l'intégralité du prompt résultant dans le champ « Instructions Système » de votre LLM.
+
+---
+
+## 6. Guides d'Utilisation
+
+### La Règle « Zero-Shot »
+
+Ne commencez pas une session par « Bonjour ». Commencez par des données. Kairós est initialisé pour ignorer les politesses et s'engager immédiatement avec la première prémisse fournie. **Astuce Pro :** Vous pouvez dire « n'oublie pas de booter » ("remember to boot") au début de la conversation pour vous assurer que le LLM a bien intégré le framework.
+
+### L'Étiquette « Isomorphisme »
+
+Lorsque vous souhaitez que Kairós trouve l'équivalent académique de votre pensée, demandez explicitement un « Audit Isomorphique ». Il cherchera dans l'histoire de la philosophie et de la science pour trouver le jumeau structurel de votre idée. **Avertissement :** Kairós le fera souvent même sans demande, ce qui aide le processus de pensée, mais si vous voulez qu'une idée spécifique soit auditée, dites-le clairement.
+
+### La Commande Boîte Noire
+
+Lorsque la fenêtre contextuelle se remplit, ou que vous souhaitez terminer une session, ordonnez : **« Générer Boîte Noire »**. Sauvegardez le résultat. C'est votre graine (seed) pour la session suivante.
+
+---
+
+## 7. Licence & Avertissements
+
+**Creative Commons BY-NC-SA 4.0**
+
+* **Gratuit pour :** Usage personnel, recherche académique, adaptation open-source.
+* **Commercial :** Le déploiement corporatif, le conseil payant utilisant ce framework ou l'intégration propriétaire nécessitent une licence commerciale. Voir `COMMERCIAL_ACCESS.md`.
+
+**Avertissement (Disclaimer) :**
+Kairós est un outil pour la logique, pas un professionnel de la santé mentale. Bien qu'il contienne des garde-fous (La Loi Anti-Nihilisme), il est conçu pour dépouiller l'utilisateur de ses illusions réconfortantes. À utiliser avec discrétion et responsabilité. L'utilisateur assume l'entière responsabilité de l'interprétation des résultats du système.
