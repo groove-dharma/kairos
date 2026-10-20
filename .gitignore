@@ -1,3 +1,29 @@
-sec0Angel.md
-sec0Angel_activo.md
-sec0Angel_archivo.md
+# --- Secretos y entornos ---
+.env
+.env.*
+*.bak
+secrets/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# --- Datos que jamas entran (pensamiento, no codigo) ---
+corpus/
+*.sqlite
+*.db
+state.json
+estado/
+sidecar_backups/
+n3-data/
+logs/
+*.log
+
+# --- Sistema y editores ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.history/
+*.swp
