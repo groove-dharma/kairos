@@ -1,0 +1,22 @@
+provider:
+  name: openai_compatible
+  model: gpt-oss-120b
+  output_language: Spanish
+  base_url: http://tinfoil-proxy:3302/v1
+  api_key: ${OPENAI_API_KEY}
+  structured: true
+  max_tokens: 8192
+  temperature: 0.2
+  price_input_per_1k: 0.00015
+  price_output_per_1k: 0.00060
+
+run:
+  segmentation_strategy: paragraph
+  max_segment_chars: 800
+  batch_size: 10
+  concurrent_workers: 3
+  rate_limit_rps: 2.0
+  retry_max: 3
+  timeout_sec: 180
+  max_prompt_chars: 200000
+  stream_open_coding: true

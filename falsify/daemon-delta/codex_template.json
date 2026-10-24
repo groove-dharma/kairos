@@ -1,0 +1,129 @@
+{
+  "index_patterns": [
+    "codex-*"
+  ],
+  "priority": 200,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "analysis": {
+        "filter": {
+          "es_stop": {
+            "type": "stop",
+            "stopwords": "_spanish_"
+          },
+          "es_plural": {
+            "type": "stemmer",
+            "language": "spanish_plural"
+          }
+        },
+        "analyzer": {
+          "codex_plural": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": [
+              "lowercase",
+              "es_stop",
+              "es_plural"
+            ]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "tipo": {
+          "type": "keyword"
+        },
+        "db": {
+          "type": "text",
+          "analyzer": "spanish",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
+        "descripcion": {
+          "type": "text",
+          "analyzer": "spanish"
+        },
+        "collection_id": {
+          "type": "keyword"
+        },
+        "collection": {
+          "type": "text",
+          "analyzer": "spanish",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
+        "notas": {
+          "type": "text",
+          "analyzer": "spanish"
+        },
+        "doc_id": {
+          "type": "keyword"
+        },
+        "doc": {
+          "type": "text",
+          "analyzer": "spanish",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
+        "concepto": {
+          "type": "text",
+          "analyzer": "spanish"
+        },
+        "bloque_id": {
+          "type": "keyword"
+        },
+        "bloque": {
+          "type": "text",
+          "analyzer": "spanish",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
+        "contenido": {
+          "type": "text",
+          "analyzer": "spanish",
+          "fields": {
+            "plural": {
+              "type": "text",
+              "analyzer": "codex_plural"
+            }
+          }
+        },
+        "fecha": {
+          "type": "date",
+          "format": "dd/MM/yyyy||yyyy-MM-dd"
+        },
+        "orden": {
+          "type": "integer"
+        },
+        "estado": {
+          "type": "keyword"
+        },
+        "version": {
+          "type": "integer"
+        },
+        "origen": {
+          "type": "keyword"
+        },
+        "creado_en": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}

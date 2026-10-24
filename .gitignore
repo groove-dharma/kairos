@@ -1,16 +1,13 @@
-# --- Secretos y entornos ---
 .env
-.env.*
 *.bak
+*.bak2
 secrets/
 
-# --- Python ---
 __pycache__/
 *.py[cod]
 .venv/
 venv/
 
-# --- Datos que jamas entran (pensamiento, no codigo) ---
 corpus/
 *.sqlite
 *.db
@@ -21,9 +18,11 @@ n3-data/
 logs/
 *.log
 
-# --- Sistema y editores ---
 .DS_Store
 Thumbs.db
 desktop.ini
 .history/
 *.swp
+
+synthesize/elenchos/data/
+synthesize/elenchos/reports/

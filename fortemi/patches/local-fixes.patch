@@ -1,0 +1,38 @@
+diff --git a/crates/matric-db/src/jobs.rs b/crates/matric-db/src/jobs.rs
+index f4576349..3921498f 100644
+--- a/crates/matric-db/src/jobs.rs
++++ b/crates/matric-db/src/jobs.rs
+@@ -301,6 +301,7 @@ impl JobRepository for PgJobRepository {
+                      SELECT 1 FROM job_queue
+                      WHERE note_id = $2 AND job_type = $3::job_type
+                        AND status IN ('pending'::job_status, 'running'::job_status)
++                       AND cost_tier IS NOT DISTINCT FROM $8
+                  )
+                  RETURNING id",
+             )
+@@ -341,6 +342,7 @@ impl JobRepository for PgJobRepository {
+                      SELECT 1 FROM job_queue
+                      WHERE note_id IS NULL AND job_type = $2::job_type
+                        AND status IN ('pending'::job_status, 'running'::job_status)
++                       AND cost_tier IS NOT DISTINCT FROM $7
+                  )
+                  RETURNING id",
+             )
+diff --git a/docker-compose.workstation.yml b/docker-compose.workstation.yml
+index dd4ff72a..91b637d2 100644
+--- a/docker-compose.workstation.yml
++++ b/docker-compose.workstation.yml
+@@ -57,13 +57,6 @@ services:
+     volumes:
+       # Bind-mount existing host models — no 6.4GB redownload
+       - ${HOME}/.ollama:/root/.ollama
+-    deploy:
+-      resources:
+-        reservations:
+-          devices:
+-            - driver: nvidia
+-              count: all
+-              capabilities: [gpu]
+     healthcheck:
+       test: ["CMD", "ollama", "list"]
+       interval: 10s

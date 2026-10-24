@@ -1,0 +1,16 @@
+NOTICE
+======
+
+This directory contains integration material for Fortémi
+(github.com/fortemi/fortemi), licensed under the Business Source
+License 1.1 (BSL 1.1), with a Change Date of February 16, 2030,
+after which it converts to AGPL v3.
+
+- patches/local-fixes.patch: contains modified Fortémi source
+  lines (jobs.rs, docker-compose.workstation.yml) derived from
+  Fortémi v2026.7.1. Those lines remain under BSL 1.1.
+- init-fortemi-fix.sh, docker-compose.override.yml, .env.example:
+  original code by this repository's author, applying configuration
+  on top of Fortémi's upstream compose file.
+
+Everything else in this repository is AGPL v3.
