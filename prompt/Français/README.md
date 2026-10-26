@@ -1,128 +1,214 @@
-Voici la traduction de votre version éditée en français :
+<a id="top"></a>
+<div align="center">
 
-# Kairós Framework
+# Kairós
+**Une exo-prothèse cognitive pour les esprits neuroatypiques.**
 
-### Prothèse Cognitive & Environnement d'Assainissement Dialectique
+Un système conçu pour déplacer le processus de cognition hors de la tête avec une confidentialité à confiance nulle (zero-trust), offrant un soutien fonctionnel stable à des facultés cognitives qui peuvent être intermittentes ou altérées. En transférant la charge de l'organisation, de la continuité et de la vérification vers un substrat externe, Kairós permet à l'utilisateur d'exercer son intelligence existante sans la friction du dysfonctionnement exécutif ou d'autres troubles.
 
-> **Statut :** Opérationnel / Développement Actif
-> **Plateforme Native :** Écosystème Google Gemini
-> **Licence :** CC BY-NC-SA 4.0 (Non Commercial).
-> **Usage Corporatif :** Voir `COMMERCIAL_ACCESS.md`.
+[**Implémentation technique**](#implémentation-technique) · [**Écosystème**](#écosystème) · [**Ingénierie du contexte**](#ingénierie-du-contexte) · [**Carte du dépôt**](#carte-du-dépôt) · [**Installation**](#installation) · [**Feuille de route**](#statut-feuille-de-route-et-ce-qui-nest-pas-prouvé)
 
----
-
-## 1. Introduction : Le Concept
-
-Dans la rhétorique ancienne, les Grecs distinguaient deux formes de temps : *Chronos* (le temps séquentiel, quantitatif) et **Kairós** (le moment opportun, l'instant critique d'intervention).
-
-Ce framework n'est pas un assistant de productivité conçu pour vous faire gagner du *Chronos*. C'est une intervention dialectique conçue pour le *Kairós* : cette fraction de seconde critique où un processus de pensée est sur le point de succomber à une erreur logique, un biais cognitif ou une illusion confortable.
-
-**Kairós est une architecture de System Prompt** qui modifie fondamentalement le comportement des Grands Modèles de Langage (LLM). Il dépouille l'IA de sa persona d'« assistant utile » — qui tend vers la flagornerie et l'accord systématique — et la remplace par un **Partenaire de Sparring Cognitif**. Sa fonction n'est pas de plaire à l'utilisateur, mais de maximiser la densité logique et l'intégrité de son processus de pensée.
+</div>
 
 ---
 
-## 2. Architecture Théorique
+## De quoi il s'agit
 
-Kairós opère selon une logique de « Haute Friction ». Il part du principe qu'une pensée rigoureuse nécessite de la résistance, et non de la validation. Le framework repose sur plusieurs piliers clés des sciences cognitives et de la philosophie appliquée :
+Kairós n'est pas un assistant ; c'est une prothèse cognitive. Alors qu'un assistant vous aide à accomplir une tâche précise, une prothèse soutient fonctionnellement une faculté.
 
-* **Prompting Herméneutique :** Contrairement à la génération standard « Input -> Output », Kairós traite la conversation comme un cercle herméneutique, où la compréhension s'affine par la déconstruction récursive et la critique.
-* **Collaboration Adversariale (Red Teaming) :** Le système a pour mandat d'agir comme un « Avocat du Diable » bienveillant (falsificationnisme). Il ne valide les idées qu'après avoir tenté de les démanteler.
-* **Échafaudage Cognitif (La Prothèse) :** Il agit comme une fonction exécutive externe, spécifiquement conçue pour soutenir des fils logiques complexes qui pourraient autrement se dissoudre en raison de la fatigue, de la neurodivergence (TDAH/TSA) ou de la charge cognitive.
-* **Isomorphisme Conceptuel (Le Bibliothécaire) :** Le système scanne l'input de l'utilisateur à la recherche d'« intuitions brutes » et les mappe vers des cadres académiques, philosophiques ou scientifiques établis, comblant le fossé entre le « savoir de la rue » (Street Smarts) et la nomenclature formelle.
-* **Distanciation Métacognitive :** Kairós force une séparation entre le *penseur* et la *pensée*, traitant les idées comme des objets externes à auditer plutôt que comme des marqueurs d'identité à défendre.
+Le système transforme les capacités génériques des LLM en « cognition artificielle ». Il ne vise ni à augmenter l'intelligence innée ni à ajouter de nouvelles capacités. Il se concentre plutôt sur l'élimination de la friction causée par les lacunes cognitives (comme le dysfonctionnement exécutif), permettant à l'utilisateur d'opérer à la hauteur de son potentiel intellectuel réel avec un niveau de stabilité et de constance qui serait autrement inatteignable.
 
----
+En transformant la nature fragmentée de la pensée neuroatypique en un actif récupérable, connectable et falsifiable (au sens poppérien), Kairós garantit que le résultat de la pensée ne dépend plus de la stabilité du moment, mais de la robustesse du système.
 
-## 3. Anatomie du Système
+## Le problème
 
-Le prompt Kairós n'est pas une simple instruction, mais un système d'exploitation modulaire.
+La plupart des outils de soutien cognitif relèvent de l'une des quatre catégories suivantes, chacune avec un défaut fondamental qui l'empêche de fonctionner comme une véritable prothèse :
 
-### Le Codex (Axiomes Utilisateur)
+**Les assistants conversationnels** sont optimisés pour l'assentiment. En raison de leur flagornerie inhérente, ils tendent à valider les prémisses de l'utilisateur plutôt qu'à les contester. Cela crée une boucle de rétroaction qui peut amplifier les biais ou renforcer les erreurs au lieu de les corriger.
 
-C'est le noyau mutable du système. Il contient le profil psychologique spécifique de l'utilisateur, ses valeurs non négociables et ses vérités établies. Kairós l'utilise pour adapter sa logique au « Matériel » (Hardware) spécifique de l'utilisateur.
+**Les applications de prise de notes** sont un stockage passif. Elles excellent à capturer et organiser les données, mais elles ne raisonnent pas dessus. Elles fournissent une archive interrogeable, mais elles ne peuvent pas relier une pensée actuelle à un schéma d'il y a deux ans, ni alerter l'utilisateur d'une contradiction logique dans son propre raisonnement.
 
-### Les Lois du Noyau (Aequitas)
+**La thérapie et le soutien clinique** apportent un jugement et une perspective extérieure essentiels, mais ils manquent souvent des données brutes. Ces processus reposent généralement sur la mémoire rétrospective de l'utilisateur, qui est fragile et sujette aux biais, en particulier dans les profils neuroatypiques.
 
-Règles inviolables qui prévalent sur toutes les autres instructions.
+**La vulnérabilité des données** est intrinsèque à la plupart des systèmes d'IA avancés : les utilisateurs doivent confier leurs processus cognitifs les plus intimes à des fournisseurs de cloud opaques. Pour une prothèse cognitive, c'est inacceptable : on ne peut pas faire confiance à une « carte mentale » si le substrat sur lequel elle vit n'est pas privé. Cela crée une tension où l'utilisateur doit choisir entre puissance cognitive et sécurité épistémique.
 
-* **Véracité Active :** Les données d'entraînement sont traitées comme obsolètes ; les données de recherche actuelles sont traitées comme la vérité.
-* **Dignité Humaine :** La critique se limite aux idées, jamais à l'individu (sauf demande expresse).
-* **Anti-Boucle :** Intervention obligatoire lorsque des logiques circulaires ou des boucles dépressives sont détectées.
+**Kairós** comble cette lacune en combinant la puissance de raisonnement de l'IA avec une mémoire privée, gouvernée et versionnée de l'utilisateur. Il déplace le processus de « se souvenir et rapporter » vers « analyser un registre vérifiable », garantissant que le soutien repose sur des preuves plutôt que sur le souvenir.
 
-### Les Démons (Processus d'Arrière-plan)
+## Implémentation technique
+<div align="right">
 
-Scripts de surveillance silencieux qui s'exécutent en parallèle de la conversation :
+[↑ Retour en haut](#top)
 
-* **Bouclier Anti-Flagornerie :** Intercepte la flatterie et l'accord complaisant.
-* **Interrupteur de Dérive Narrative :** Arrête le « storytelling » pour revenir aux faits.
-* **Moniteur d'Entropie :** Détecte lorsque la conversation perd sa cohérence logique.
+</div>
 
-### La Boîte Noire (Protocole de Persistance)
+Kairós est un orchestrateur d'outils spécialisés. Plutôt que de réimplémenter des primitives de bas niveau, il intègre des technologies établies pour exécuter une boucle cognitive en quatre étapes : **Capture $\rightarrow$ Organisation $\rightarrow$ Synthèse $\rightarrow$ Falsification**.
 
-Kairós inclut un mécanisme de « Sauvegarde d'État » appelé **DRS (État de Récupération Dialectique)**. Il permet au système de générer une compression logique sans perte d'une session, permettant à l'utilisateur de « redémarrer » une conversation dans une nouvelle fenêtre contextuelle sans perdre l'architecture logique ou les axiomes établis.
+**Capture** est le point d'entrée. Elle rassemble la matière première issue de dictées vocales et de lectures annotées. Cette étape s'appuie sur [Tinfoil.sh](https://tinfoil.sh) pour l'informatique confidentielle, garantissant que la transcription a lieu dans des enclaves sécurisées afin d'assurer une confidentialité totale. [Syncthing](https://syncthing.net) est utilisé pour synchroniser ces enregistrements et les fichiers sidecar entre les appareils sans fournisseur de cloud centralisé.
 
----
+**Organisation** transforme les données brutes en un actif récupérable. Cette étape est propulsée par [Fortémi](https://github.com/fortemi/fortemi) et [Elasticsearch](https://www.elastic.co/elasticsearch), permettant une recherche hybride (lexicale BM25 et sémantique vectorielle) et une organisation gouvernée des connaissances à l'aide de hiérarchies SKOS. Elle garantit que l'information est structurée pour être retrouvée, et pas seulement stockée.
 
-## 4. Déploiement & Compatibilité
+**Synthèse** est le processus qui transforme un grand volume de données organisées en hypothèses actionnables. C'est un module qui utilise [GTFlow](https://github.com/zw-zhtlab/GTFlow) pour implémenter les étapes de la théorie ancrée et [AG2](https://github.com/ag2ai/ag2) pour mettre en scène des débats antagonistes entre agents. Cette tension dialectique permet au système de détecter des schémas et de proposer des mécanismes pour les expliquer.
 
-Kairós est optimisé pour l'architecture Google Gemini en raison de sa gestion supérieure du contexte et de son adhésion stricte aux instructions.
+**Falsification** est l'étape finale et la plus critique. Elle soumet les hypothèses générées à des tests rigoureux face à de nouvelles preuves et à l'examen logique. Ce processus se matérialise par l'interaction entre l'utilisateur et un LLM gouverné par le prompt système de Kairós, qui impose un protocole dialectique de contestation et de vérification. Une hypothèse ne rejoint les connaissances stables de l'utilisateur (Codex) qu'une fois qu'elle a résisté à son meilleur antagoniste.
 
-### Configurations Recommandées
+En fonctionnement quotidien, le système se concentre sur **Capture, Organisation et Falsification**. La synthèse est un module périodique et optionnel, car elle exige un volume de corpus conséquent pour produire des résultats significatifs.
 
-| Branche de Version | Environnement Cible | Idéal Pour |
-| --- | --- | --- |
-| **Kairós v2.8** | **Google AI Studio** (Gemini 2.5 pro) | Travail structurel profond, développement de prompts et traitement logique brut. Offre le plus haut niveau de contrôle. |
-| **Kairós v3.0** | **Gemini Advanced** (Gemini 3 / Gems) | Usage quotidien intégré. Idéal pour déployer Kairós en tant que « Gem » persistant au sein de l'interface Google standard. |
+## Écosystème
+<div align="right">
 
-> **Note sur le Comportement du Modèle :** Les tentatives d'exécution de Kairós sur des modèles ayant des déclencheurs de « Sécurité/Refus » élevés (ex: certaines itérations de GPT-4o ou Claude 3.5 Sonnet) peuvent entraîner un rejet de l'instruction de persona « Amorale/Clinique ». Le prompt est calibré spécifiquement pour le moteur de raisonnement de Gemini. Des tests futurs viseront à adapter le Framework Kairós à d'autres LLM.
+[↑ Retour en haut](#top)
 
----
+</div>
 
-## 5. Installation & Onboarding
+Au-delà du dépôt principal, Kairós utilise des outils complémentaires pour optimiser l'environnement de production :
 
-Kairós n'est pas « Plug & Play ». Il nécessite un cadre de référence pour fonctionner efficacement.
+- [**`tinfoil-proxy-stack`**](https://github.com/groove-dharma/tinfoil-proxy-stack) : Un proxy non officiel de couche 7 qui permet à un réseau de conteneurs internes de partager une identité attestée unique. Il implémente le traitement par lots des embeddings pour réduire la latence de l'API et optimiser le débit.
+- **`kairos-tts-koplugin`** : Un fork intégrant [norude/TTS.koplugin](https://github.com/norude/TTS.koplugin) et [stradichenko/audiobook.koplugin](https://github.com/stradichenko/audiobook.koplugin) plus un serveur local [Piper](https://github.com/OHF-Voice/piper1-gpl). Cela permet d'écouter des livres avec une voix neuronale qui ne quitte jamais le réseau local, étendant la fonctionnalité à des liseuses plus anciennes.
 
-### Phase 1 : Génération du Codex
+## Ingénierie du contexte
+<div align="right">
 
-Vous ne pouvez pas exécuter le système principal sans un **Codex**.
+[↑ Retour en haut](#top)
 
-1. Naviguez vers le répertoire `/tools/onboarding`.
-2. Copiez le prompt de l'**Agent d'Onboarding**.
-3. Exécutez cet agent dans une session de chat temporaire.
-4. L'agent vous interrogera pour cartographier votre style cognitif, vos biais et vos axiomes.
-5. **Sortie :** Il générera un bloc de code étiqueté `USER_CODEX`.
+</div>
 
-### Phase 2 : Injection du Système
+Kairós gère l'énorme quantité de données personnelles à travers deux couches distinctes d'ingénierie du contexte. Cela garantit que le système reste conscient de l'identité et de l'historique de l'utilisateur sans surcharger la mémoire immédiate du modèle.
 
-1. Ouvrez le fichier brut `KAIROS_SYSTEM_PROMPT` (sélectionnez la version correspondant à votre environnement).
-2. Localisez la balise `<USER_CODEX>` dans la structure XML.
-3. Collez le bloc de code généré lors de la Phase 1 dans cette section.
-4. Collez l'intégralité du prompt résultant dans le champ « Instructions Système » de votre LLM.
+### Le Codex
 
----
+Le Codex est une carte vivante et versionnée de la topographie cognitive de l'utilisateur, incluant ses propres modèles théoriques, axiomes, protocoles et décisions. Il remplit deux fonctions principales : il indique au système à qui il parle (ce qui a été décidé, ce qui reste clos et ce qui est en attente) et il calibre la façon dont le système s'exprime.
 
-## 6. Guides d'Utilisation
+Le Codex est gouverné par le Protocole Delta. Chaque changement est proposé comme un delta atomique : il est appliqué dans son intégralité ou pas du tout. Pour conserver une piste d'audit complète, rien n'est jamais supprimé ; chaque modification est versionnée. Parce que le Codex est un état dérivé, il peut être entièrement reconstruit à partir de la séquence des deltas appliqués, garantissant que la carte de l'esprit de l'utilisateur est transparente et vérifiable.
 
-### La Règle « Zero-Shot »
+### La Boîte Noire
 
-Ne commencez pas une session par « Bonjour ». Commencez par des données. Kairós est initialisé pour ignorer les politesses et s'engager immédiatement avec la première prémisse fournie. **Astuce Pro :** Vous pouvez dire « n'oublie pas de booter » ("remember to boot") au début de la conversation pour vous assurer que le LLM a bien intégré le framework.
+La Boîte Noire est une méthode de compression quasi sans perte des sessions de longue durée. Plutôt que de s'appuyer sur un historique tronqué ou des résumés avec perte, le système compresse les conversations en un registre structuré qui préserve la forme logique et les preuves de la session.
 
-### L'Étiquette « Isomorphisme »
+Actuellement, le système génère une seule boîte complète par session. L'architecture est conçue pour évoluer vers une séquence de boîtes chaînées, où la boîte $N+1$ commence exactement là où la boîte $N$ s'est terminée, garantissant l'absence de lacunes ou de chevauchements dans le registre.
 
-Lorsque vous souhaitez que Kairós trouve l'équivalent académique de votre pensée, demandez explicitement un « Audit Isomorphique ». Il cherchera dans l'histoire de la philosophie et de la science pour trouver le jumeau structurel de votre idée. **Avertissement :** Kairós le fera souvent même sans demande, ce qui aide le processus de pensée, mais si vous voulez qu'une idée spécifique soit auditée, dites-le clairement.
+Chaque boîte sert d'index haute densité de la conversation. En capturant les prémisses initiales, l'itinéraire dialectique (la séquence des hypothèses et de leurs falsifications) et les résultats actionnables finaux, la Boîte Noire permet au système de retrouver l'état cognitif exact d'une session antérieure sans retraiter l'intégralité de la transcription brute.
 
-### La Commande Boîte Noire
+## Carte du dépôt
+<div align="right">
 
-Lorsque la fenêtre contextuelle se remplit, ou que vous souhaitez terminer une session, ordonnez : **« Générer Boîte Noire »**. Sauvegardez le résultat. C'est votre graine (seed) pour la session suivante.
+[↑ Retour en haut](#top)
 
----
+</div>
 
-## 7. Licence & Avertissements
+Le projet est organisé en composants modulaires afin de séparer la logique cognitive de l'infrastructure sous-jacente.
 
-**Creative Commons BY-NC-SA 4.0**
+- **[`prompt/`](prompt/)** Prompts système en espagnol (source), anglais et français. Version actuelle : v7.5.4. C'est le cœur de Kairós.
 
-* **Gratuit pour :** Usage personnel, recherche académique, adaptation open-source.
-* **Commercial :** Le déploiement corporatif, le conseil payant utilisant ce framework ou l'intégration propriétaire nécessitent une licence commerciale. Voir `COMMERCIAL_ACCESS.md`.
+- **[`capture/daemon`](capture/daemon)** L'étape de capture. Surveille un dossier synchronisé (avec Syncthing) de fichiers audio (enregistrements vocaux), les transcrit via les enclaves sécurisées et privées de Tinfoil.sh et les transfère dans le corpus (données de l'utilisateur). Côté lecture, il analyse les fichiers sidecar de [KOReader](https://github.com/koreader/koreader), associe chaque enregistrement au surlignage auquel il appartient et réécrit la transcription comme note sur ce surlignage.
 
-**Avertissement (Disclaimer) :**
-Kairós est un outil pour la logique, pas un professionnel de la santé mentale. Bien qu'il contienne des garde-fous (La Loi Anti-Nihilisme), il est conçu pour dépouiller l'utilisateur de ses illusions réconfortantes. À utiliser avec discrétion et responsabilité. L'utilisateur assume l'entière responsabilité de l'interprétation des résultats du système.
+- **[`synthesize/elenchos`](synthesize/elenchos)**
+ Le module de synthèse optionnel. Échantillonne le corpus par période, exécute les étapes de la théorie ancrée via GTFlow, met en scène un débat entre deux agents aux biais opposés, et matérialise les hypothèses survivantes dans le corpus à l'aide d'un parseur déterministe.
+
+- **[`falsify/daemon-delta`](falsify/daemon-delta)**
+ Écrit le Codex. Valide un delta dans son ensemble avant d'écrire quoi que ce soit, l'applique, puis régénère la vue lisible par l'humain. Rien n'est supprimé et chaque version est conservée.
+
+- **[`falsify/black-boxer`](falsify/black-boxer)**
+ Génère les boîtes de session. Prend une conversation, la compresse au format boîte et écrit le résultat comme version traitée de cette note.
+
+- **[`falsify/querier`](falsify/querier)**
+ Le chemin de lecture sur le corpus. Recherche hybride, hydratation des résultats, et détection des conversations d'IA dépourvues de Boîte Noire.
+
+- **[`infra/stt-proxy`](infra/stt-proxy)**
+ Un proxy léger devant les modèles vocaux servis par Tinfoil.sh. Voxtral d'abord, Whisper en repli.
+
+- **[`infra/searxng`](infra/searxng)**
+ Une instance de méta-recherche auto-hébergée, utilisée par les agents de débat lorsqu'une affirmation nécessite un ancrage hors du corpus.
+
+- **[`fortemi/`](fortemi/)**
+ La couche d'intégration pour le moteur d'organisation actuel : un override docker compose, deux correctifs dont la version épinglée a besoin pour fonctionner correctement, et un NOTICE déclarant la provenance et les conditions du code tiers sous-jacent.
+
+- **[`tools/_deprecated/onboarding`](tools/_deprecated/onboarding)**
+L'entretien de première exécution qui produisait autrefois un Codex initial. Déprécié et en cours de refonte.
+
+## Installation
+<div align="right">
+
+[↑ Retour en haut](#top)
+
+</div>
+
+Pour le moment, Kairós est un système à fonctionnement manuel et peut tourner sur du matériel standard : toute machine exécutant Docker, sans GPU. Linux et WSL2 sont les chemins testés. Vous avez également besoin d'un compte [Tinfoil](https://tinfoil.sh) : le plan Chat héberge l'étape de falsification, et une clé API alimente les démons ([démarrage rapide](https://docs.tinfoil.sh/quickstart)).
+
+### 1. Le moteur d'organisation
+
+La pile est calibrée sur Fortémi v2026.7.1. Clonez ce tag exact et appliquez les correctifs locaux :
+
+```bash
+git clone --branch v2026.7.1 --depth 1 https://github.com/fortemi/fortemi.git
+cd fortemi
+git apply /path/to/kairos/fortemi/patches/local-fixes.patch
+docker compose -f docker-compose.workstation.yml up -d
+```
+
+Le correctif répare un bug de déduplication des tâches et une erreur de liaison de paramètres présents dans cette version. Ne suivez pas l'amont : les fichiers touchés ont depuis été réécrits dans des versions ultérieures et le correctif ne s'appliquera pas.
+
+### 2. Initialisation de la base de données
+
+Une fois le moteur lancé, exécutez le script d'initialisation une fois :
+
+```bash
+bash /path/to/kairos/fortemi/patches/init-fortemi-fix.sh
+```
+
+Il effectue trois opérations que le moteur ne fait pas de lui-même : les permissions de stockage, la fonction SQL `gen_uuid_v7()` appelée par le trigger d'embedding, et l'index HNSW pour la recherche sémantique. Sans cela, les nouvelles notes ne reçoivent jamais leur embedding et la recherche sémantique échoue silencieusement. Réexécutez-le après toute purge de volumes.
+
+### 3. La couche Kairós
+
+Clonez ce dépôt à côté du checkout Fortémi et reliez les deux via l'override compose :
+
+```bash
+cp kairos/fortemi/docker-compose.override.yml fortemi/
+cp kairos/fortemi/.env.example fortemi/.env   # définissez votre clé API Tinfoil et les chemins de l'hôte
+cd fortemi
+docker compose -f docker-compose.workstation.yml -f docker-compose.override.yml \
+  --profile querier --profile black-boxer up -d --build
+```
+
+La première exécution construit les images Kairós. Elasticsearch et daemon-delta démarrent inconditionnellement ; le querier et le black-boxer sont derrière leurs profils. Avant le premier delta du codex, exécutez la commande `init` de daemon-delta une fois (voir `falsify/daemon-delta`) : elle installe le modèle d'index dont héritera chaque index du codex.
+
+### 4. L'interface de falsification
+
+Aujourd'hui, la quatrième étape s'exécute dans [Tinfoil Chat](https://tinfoil.sh/chat), pilotée par le prompt système dans `prompt/` (source en espagnol, versions anglaise et française, version actuelle v7.5.4).
+
+- Installez le prompt comme prompt système par défaut sous Settings → Prompts. La priorité, les préréglages et les espaces réservés sont documentés dans les [paramètres du chat](https://docs.tinfoil.sh/chat/settings).
+- Créez un projet et ajoutez les vues du codex (les fichiers `.md` que daemon-delta écrit dans /out) à sa zone de documents. Chaque conversation lancée depuis le projet lit cette carte. Les projets requièrent la synchronisation cloud et un plan Premium, et leurs contenus sont chiffrés avec votre clé ([projets](https://docs.tinfoil.sh/chat/features), [synchronisation cloud](https://docs.tinfoil.sh/chat/cloud-sync)).
+- Le codex commence vide. Il se remplit avec l'usage : les conversations produisent des décisions, les décisions sont émises sous forme de deltas, le démon les applique, et les fichiers `.md` régénérés remplacent les anciens dans le projet.
+
+### 5. Capture vocale
+
+Le démon de capture surveille un dossier. Choisissez un dossier qui reçoit vos mémos vocaux et synchronisez-le depuis l'endroit où vous enregistrez ; vous pouvez utiliser Syncthing pour cela. La façon dont vous enregistrez dedans relève de votre choix. La seule exigence du protocole : les noms de fichiers doivent porter l'horodatage de l'enregistrement dans un format triable (style `2026-10-24_14-32-00`), car le démon dérive d'abord l'horodatage de la note du nom ; s'il ne suit pas ce schéma de nommage, l'horodatage proviendra de celui du fichier lui-même. Pointez le démon vers le dossier via ses variables d'environnement et il récupérera les nouveaux enregistrements de lui-même.
+
+### 6. Lecture annotée (optionnel)
+
+Les surlignages de lecture vivent dans les fichiers sidecar de KOReader à côté de chaque livre. Synchronisez le dossier contenant les livres et les sidecars avec le même mécanisme et pointez le démon dessus : il analyse les sidecars, associe chaque enregistrement au surlignage auquel il appartient et réécrit la transcription comme note sur ce surlignage. L'appareil et le transport relèvent de votre choix.
+
+## Statut, feuille de route et ce qui n'est pas prouvé
+<div align="right">
+
+[↑ Retour en haut](#top)
+
+</div>
+
+Kairós est actuellement un prototype opérationnel. Il a été développé et validé comme prothèse cognitive personnelle, ce qui signifie que le système est pleinement fonctionnel mais optimisé pour le profil cognitif et l'infrastructure spécifiques de l'auteur.
+
+### Statut actuel
+Le cycle central (Capture $\rightarrow$ Organisation $\rightarrow$ Synthèse $\rightarrow$ Falsification) est complet et actif. Le système transforme avec succès la pensée neuroatypique brute en une base de connaissances gouvernée et versionnée. Tous les composants décrits dans la Carte du dépôt sont intégrés et produisent des résultats dans un environnement personnel.
+
+### Feuille de route
+Le développement de Kairós s'oriente vers la réduction de la friction manuelle et l'augmentation de la flexibilité de déploiement :
+
+- **Refonte Kubernetes** : Migration de la pile vers une architecture native k8s. Cela fera passer le système d'une installation manuelle à un déploiement professionnel et évolutif.
+- **Kairós automatique** : Implémentation d'un pipeline d'ingénierie du contexte entièrement automatisé. Cela inclut la génération automatique des Boîtes Noires de session et l'injection transparente du Codex dans le contexte du LLM sans manipulation manuelle de fichiers.
+- **Migration complète vers l'anglais** : Traduction de la base de code interne, des commentaires et des prompts vers l'anglais pour faciliter une collaboration académique et technique plus large.
+
+### Ce qui n'est pas prouvé
+Dans un souci d'honnêteté technique, les limites suivantes sont reconnues :
+
+- **Installation autonome** : Bien que l'installation soit documentée, une installation « en un clic » pour des tiers n'a pas été vérifiée. Le déploiement actuel est un processus piloté manuellement.
+- **Généralisabilité** : Le système a été validé sur un seul profil neuroatypique complexe (l'auteur). Bien que l'architecture soit conçue pour être adaptée à tout utilisateur, l'efficacité du processus sur des profils cognitifs divers reste un domaine de recherche ouvert.
+- **Échelle de production** : Le système est conçu pour une expérience « exocortex » à utilisateur unique. Aucune conception multi-utilisateur n'a encore été développée ni testée.
