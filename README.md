@@ -62,7 +62,7 @@ In daily operation, the system focuses on **Capture, Organize, and Falsify**. Sy
 
 Beyond the main repository, Kairós utilizes complementary tools to optimize the production environment:
 
-- **`tinfoil-proxy-stack`**: An unofficial Layer 7 proxy that allows a network of internal containers to share a single attested identity. It implements embedding batching to reduce API latency and optimize throughput.
+- [**`tinfoil-proxy-stack`**](https://github.com/groove-dharma/tinfoil-proxy-stack): An unofficial Layer 7 proxy that allows a network of internal containers to share a single attested identity. It implements embedding batching to reduce API latency and optimize throughput.
 - **`kairos-tts-koplugin`**: A fork integrating [norude/TTS.koplugin](https://github.com/norude/TTS.koplugin) and [stradichenko/audiobook.koplugin](https://github.com/stradichenko/audiobook.koplugin) plus a local [Piper](https://github.com/OHF-Voice/piper1-gpl) server. This allows books to be listened to with a neural voice that never leaves the local network, extending functionality to older e-reader devices.
 
 ## Context Engineering
