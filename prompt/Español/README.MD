@@ -63,7 +63,7 @@ En el funcionamiento diario, el sistema se centra en **Captura, Organización y 
 Más allá del repositorio principal, Kairós utiliza herramientas complementarias para optimizar el entorno de producción:
 
 - [**`tinfoil-proxy-stack`**](https://github.com/groove-dharma/tinfoil-proxy-stack): Un proxy no oficial de capa 7 que permite a una red de contenedores internos compartir una única identidad atestiguada. Implementa la agrupación por lotes de embeddings para reducir la latencia de la API y optimizar el rendimiento.
-- **`kairos-tts-koplugin`**: Un fork que integra [norude/TTS.koplugin](https://github.com/norude/TTS.koplugin) y [stradichenko/audiobook.koplugin](https://github.com/stradichenko/audiobook.koplugin) más un servidor local de [Piper](https://github.com/OHF-Voice/piper1-gpl). Esto permite escuchar libros con una voz neuronal que nunca sale de la red local, extendiendo la funcionalidad a dispositivos e-reader más antiguos.
+- [**`kairos-tts-koplugin`**](https://github.com/groove-dharma/kairos-tts-koplugin): Un fork que integra [norude/TTS.koplugin](https://github.com/norude/TTS.koplugin) y [stradichenko/audiobook.koplugin](https://github.com/stradichenko/audiobook.koplugin) más un servidor local de [Piper](https://github.com/OHF-Voice/piper1-gpl). Esto permite escuchar libros con una voz neuronal que nunca sale de la red local, extendiendo la funcionalidad a dispositivos e-reader más antiguos.
 
 ## Ingeniería de contexto
 <div align="right">
