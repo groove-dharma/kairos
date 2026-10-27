@@ -132,7 +132,7 @@ La entrevista de primera ejecución que solía producir un Codex inicial. Obsole
 
 </div>
 
-Por el momento, Kairós es un sistema operado manualmente y puede ejecutarse en hardware convencional: cualquier máquina que ejecute Docker, sin necesidad de GPU. Linux y WSL2 son las rutas probadas. También necesitas una cuenta de [Tinfoil](https://tinfoil.sh): el plan Chat aloja la etapa de falsación, y una clave de API alimenta a los demonios ([guía de inicio rápido](https://docs.tinfoil.sh/quickstart)).
+Por el momento, Kairós es un sistema operado manualmente y puede ejecutarse en hardware convencional: cualquier máquina que ejecute Docker, sin necesidad de GPU. Linux y WSL2 son las rutas probadas. También necesitas una cuenta de [Tinfoil](https://tinfoil.sh): el plan Chat aloja la etapa de falsación, y una clave de API alimenta a los daemons ([guía de inicio rápido](https://docs.tinfoil.sh/quickstart)).
 
 ### 1. El motor de organización
 
@@ -177,15 +177,15 @@ Hoy la cuarta etapa se ejecuta en [Tinfoil Chat](https://tinfoil.sh/chat), impul
 
 - Instala el prompt como tu prompt del sistema predeterminado en Settings → Prompts. La precedencia, los valores predefinidos y los marcadores de posición están documentados en la [configuración del chat](https://docs.tinfoil.sh/chat/settings).
 - Crea un proyecto y añade las vistas del codex (los archivos `.md` que daemon-delta escribe en /out) a su área de documentos. Cada chat iniciado desde el proyecto lee ese mapa. Los proyectos requieren sincronización en la nube y un plan Premium, y sus contenidos se cifran bajo tu clave ([proyectos](https://docs.tinfoil.sh/chat/features), [sincronización en la nube](https://docs.tinfoil.sh/chat/cloud-sync)).
-- El codex empieza vacío. Se llena con el uso: las conversaciones producen decisiones, las decisiones se emiten como deltas, el demonio los aplica y los archivos `.md` regenerados sustituyen a los antiguos en el proyecto.
+- El codex empieza vacío. Se llena con el uso: las conversaciones producen decisiones, las decisiones se emiten como deltas, el daemon los aplica y los archivos `.md` regenerados sustituyen a los antiguos en el proyecto.
 
 ### 5. Captura de voz
 
-El demonio de captura vigila una carpeta. Elige una carpeta que reciba tus notas de voz y sincronízala desde dondequiera que grabes; puedes usar Syncthing para ello. Cómo grabas en ella es elección tuya. El único requisito del protocolo: los nombres de archivo deben llevar la marca de tiempo de la grabación en un patrón ordenable (estilo `2026-10-24_14-32-00`), porque el demonio deriva la marca de tiempo de la nota primero del nombre; si no sigue ese patrón de nomenclatura, la marca de tiempo provendrá de la del propio archivo. Apunta el demonio a la carpeta mediante sus variables de entorno y recogerá las nuevas grabaciones por sí solo.
+El daemon de captura vigila una carpeta. Elige una carpeta que reciba tus notas de voz y sincronízala desde dondequiera que grabes; puedes usar Syncthing para ello. Cómo grabas en ella es elección tuya. El único requisito del protocolo: los nombres de archivo deben llevar la marca de tiempo de la grabación en un patrón ordenable (estilo `2026-10-24_14-32-00`), porque el daemon deriva la marca de tiempo de la nota primero del nombre; si no sigue ese patrón de nomenclatura, la marca de tiempo provendrá de la del propio archivo. Apunta el daemon a la carpeta mediante sus variables de entorno y recogerá las nuevas grabaciones por sí solo.
 
 ### 6. Lectura anotada (opcional)
 
-Los subrayados de lectura viven en archivos sidecar de KOReader junto a cada libro. Sincroniza la carpeta que contiene los libros y los sidecars con el mismo mecanismo y apunta el demonio a ella: analiza los sidecars, asocia cada grabación con el subrayado al que pertenece y escribe la transcripción de vuelta como una nota en ese subrayado. El dispositivo y el transporte son elección tuya.
+Los subrayados de lectura viven en archivos sidecar de KOReader junto a cada libro. Sincroniza la carpeta que contiene los libros y los sidecars con el mismo mecanismo y apunta el daemon a ella: analiza los sidecars, asocia cada grabación con el subrayado al que pertenece y escribe la transcripción de vuelta como una nota en ese subrayado. El dispositivo y el transporte son elección tuya.
 
 ## Estado, hoja de ruta y lo que no está probado
 <div align="right">

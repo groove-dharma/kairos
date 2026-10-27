@@ -132,7 +132,7 @@ L'entretien de première exécution qui produisait autrefois un Codex initial. D
 
 </div>
 
-Pour le moment, Kairós est un système à fonctionnement manuel et peut tourner sur du matériel standard : toute machine exécutant Docker, sans GPU. Linux et WSL2 sont les chemins testés. Vous avez également besoin d'un compte [Tinfoil](https://tinfoil.sh) : le plan Chat héberge l'étape de falsification, et une clé API alimente les démons ([démarrage rapide](https://docs.tinfoil.sh/quickstart)).
+Pour le moment, Kairós est un système à fonctionnement manuel et peut tourner sur du matériel standard : toute machine exécutant Docker, sans GPU. Linux et WSL2 sont les chemins testés. Vous avez également besoin d'un compte [Tinfoil](https://tinfoil.sh) : le plan Chat héberge l'étape de falsification, et une clé API alimente les daemons ([démarrage rapide](https://docs.tinfoil.sh/quickstart)).
 
 ### 1. Le moteur d'organisation
 
@@ -177,15 +177,15 @@ Aujourd'hui, la quatrième étape s'exécute dans [Tinfoil Chat](https://tinfoil
 
 - Installez le prompt comme prompt système par défaut sous Settings → Prompts. La priorité, les préréglages et les espaces réservés sont documentés dans les [paramètres du chat](https://docs.tinfoil.sh/chat/settings).
 - Créez un projet et ajoutez les vues du codex (les fichiers `.md` que daemon-delta écrit dans /out) à sa zone de documents. Chaque conversation lancée depuis le projet lit cette carte. Les projets requièrent la synchronisation cloud et un plan Premium, et leurs contenus sont chiffrés avec votre clé ([projets](https://docs.tinfoil.sh/chat/features), [synchronisation cloud](https://docs.tinfoil.sh/chat/cloud-sync)).
-- Le codex commence vide. Il se remplit avec l'usage : les conversations produisent des décisions, les décisions sont émises sous forme de deltas, le démon les applique, et les fichiers `.md` régénérés remplacent les anciens dans le projet.
+- Le codex commence vide. Il se remplit avec l'usage : les conversations produisent des décisions, les décisions sont émises sous forme de deltas, le daemon les applique, et les fichiers `.md` régénérés remplacent les anciens dans le projet.
 
 ### 5. Capture vocale
 
-Le démon de capture surveille un dossier. Choisissez un dossier qui reçoit vos mémos vocaux et synchronisez-le depuis l'endroit où vous enregistrez ; vous pouvez utiliser Syncthing pour cela. La façon dont vous enregistrez dedans relève de votre choix. La seule exigence du protocole : les noms de fichiers doivent porter l'horodatage de l'enregistrement dans un format triable (style `2026-10-24_14-32-00`), car le démon dérive d'abord l'horodatage de la note du nom ; s'il ne suit pas ce schéma de nommage, l'horodatage proviendra de celui du fichier lui-même. Pointez le démon vers le dossier via ses variables d'environnement et il récupérera les nouveaux enregistrements de lui-même.
+Le daemon de capture surveille un dossier. Choisissez un dossier qui reçoit vos mémos vocaux et synchronisez-le depuis l'endroit où vous enregistrez ; vous pouvez utiliser Syncthing pour cela. La façon dont vous enregistrez dedans relève de votre choix. La seule exigence du protocole : les noms de fichiers doivent porter l'horodatage de l'enregistrement dans un format triable (style `2026-10-24_14-32-00`), car le daemon dérive d'abord l'horodatage de la note du nom ; s'il ne suit pas ce schéma de nommage, l'horodatage proviendra de celui du fichier lui-même. Pointez le daemon vers le dossier via ses variables d'environnement et il récupérera les nouveaux enregistrements de lui-même.
 
 ### 6. Lecture annotée (optionnel)
 
-Les surlignages de lecture vivent dans les fichiers sidecar de KOReader à côté de chaque livre. Synchronisez le dossier contenant les livres et les sidecars avec le même mécanisme et pointez le démon dessus : il analyse les sidecars, associe chaque enregistrement au surlignage auquel il appartient et réécrit la transcription comme note sur ce surlignage. L'appareil et le transport relèvent de votre choix.
+Les surlignages de lecture vivent dans les fichiers sidecar de KOReader à côté de chaque livre. Synchronisez le dossier contenant les livres et les sidecars avec le même mécanisme et pointez le daemon dessus : il analyse les sidecars, associe chaque enregistrement au surlignage auquel il appartient et réécrit la transcription comme note sur ce surlignage. L'appareil et le transport relèvent de votre choix.
 
 ## Statut, feuille de route et ce qui n'est pas prouvé
 <div align="right">
