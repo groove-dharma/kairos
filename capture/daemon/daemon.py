@@ -31,6 +31,23 @@ Sidecar reconciliation:
   S4. The write-back itself changes the .sdr → the watcher re-triggers → no-op
       (self-healing). If KOReader stomps it (book open when the note arrives),
       each stomp is a real file change → retry with cap and cooldown.
+  S5. Time join (the authority): every RECONCILE_INTERVAL seconds, and on every
+      sidecar change, the daemon rebuilds the whole relation from facts:
+        X = every highlight in every .lua after the cutoff (datetime, note)
+        Y = every completed audio in state.json (created_at_utc, note_id)
+      Each audio is matched to the highlight whose window contains it (5
+      minutes, LIFO when several do). Only the difference is written, in both
+      directions: the transcription into the highlight's note, the quote and
+      tag into the audio's note. A transcription found in a highlight it no
+      longer belongs to is removed from there.
+      Idempotent by diff: no difference, no write. Retroactive by design: the
+      date is the audio's real recording time, so a highlight that arrives late
+      wins its note whenever it arrives. States and audios_asignados do not
+      decide anything; they are audit.
+
+Quote idempotency is decided by the quote's own text, never by its label:
+the footer (book title, chapter, page) is decoration that can be recorded in
+different shapes across sessions, and comparing it wrote quotes twice.
 """
 
 import os
@@ -69,10 +86,11 @@ LIBROS_SYNC_DIR = Path(os.environ.get("LIBROS_SYNC_DIR", "/libros-sync"))
 SIDECAR_STATE_FILE = STATE_DIR / "sidecars.json"      # mtime+size baseline per .lua
 SIDECAR_BACKUP_DIR = STATE_DIR / "sidecar_backups"    # write-back backups
 VENTANA_MINUTOS = int(os.environ.get("VENTANA_MINUTOS", "5"))
-NO_RETROACTIVIDAD = datetime(2026, 10, 1)  # local time; before this → done_empty
+NO_RETROACTIVIDAD = datetime(2026, 10, 1)  # local time; before this → out of the join
 POLL_INTERVAL_SIDECARS = int(os.environ.get("POLL_INTERVAL_SIDECARS", "10"))
 WRITE_CAP = 3  # write-back retries before failed_write
 FAILED_WRITE_COOLDOWN_MIN = 30  # minutes before a failed_write revives
+RECONCILE_INTERVAL = int(os.environ.get("RECONCILE_INTERVAL", "600"))  # seconds between time joins
 
 FORTEMI_API = "http://matric-api:3000/api/v1"
 POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "postgres")
@@ -101,6 +119,8 @@ PATRONES_TRANSITORIOS = ("connection", "timed out", "timeout",
 API_WAIT_TIMEOUT = int(os.environ.get("API_WAIT_TIMEOUT", "300"))
 # Fortemi rejects tags over this length, verified by replication
 TAG_MAX_LEN = 100
+# prefix used to decide whether a transcription already sits in a note
+AGUJA_IA = 80
 
 # ─── Logging ───
 logging.basicConfig(
@@ -115,6 +135,7 @@ state_lock = threading.Lock()
 
 # reconciliation locks
 _pendientes_lock = threading.Lock()
+_reconcile_lock = threading.Lock()
 _sidecar_locks = {}
 _sidecar_locks_guard = threading.Lock()
 _sidecar_state = {}
@@ -142,18 +163,36 @@ def set_timestamp(note_id, timestamp):
         (timestamp, note_id)
     )
 
-def append_cita_libro(note_id, cita, title_author, chapter="", pageno=None):
-    """Quote with highlight context (chapter/page come from the sidecar).
-    Daemon format preserved + context."""
+def _texto_cita(cita, title_author, chapter="", pageno=None):
+    """The daemon's quote block: the quote itself plus its footer."""
     contexto = ""
     if chapter:
         contexto += f", cap. {chapter}"
     if pageno is not None:
         contexto += f", pág. {pageno}"
+    return f"\n\n> {cita}\n> — *{title_author}*{contexto}"
+
+def append_cita_libro(note_id, cita, title_author, chapter="", pageno=None):
+    """Appends the quote block to the note's original content."""
     db_query(
         "UPDATE note_original SET content = content || %s WHERE note_id = %s",
-        (f"\n\n> {cita}\n> — *{title_author}*{contexto}", note_id)
+        (_texto_cita(cita, title_author, chapter, pageno), note_id)
     )
+
+def sustituir_cita_libro(note_id, entry):
+    """Replaces the last quote block (whatever highlight it came from) with
+    the one this audio belongs to. Used when the audio was matched to a
+    different highlight than the one its quote was written for."""
+    book, ann = entry["book"], entry["ann"]
+    ta = title_author_del_libro(book)
+    cur = get_transcription(note_id)
+    i = cur.rfind("\n\n> ")
+    base = cur[:i] if i >= 0 else cur
+    nuevo = base + _texto_cita(ann.get("text", ""), ta,
+                               ann.get("chapter", "") or "",
+                               ann.get("pageno"))
+    db_query("UPDATE note_original SET content = %s WHERE note_id = %s",
+             (nuevo, note_id))
 
 
 # ─── Fortemi API ───
@@ -577,6 +616,13 @@ def title_author_del_libro(book):
     return book["title"]
 
 
+def _buscar_anotacion(anns, md5, key):
+    for _idx, a in anns.items():
+        if isinstance(a, dict) and conciliacion.key_para(md5, a) == key:
+            return a
+    return None
+
+
 # ─── Available audios (active + rotated) ───
 
 _archivados_cache = None  # (files_frozenset, merged_dict)
@@ -624,6 +670,14 @@ def audios_disponibles(state):
     return out
 
 
+def _resolver_audio(state, fname):
+    """Entry of an audio file, from the active state or from the rotations."""
+    ent = state.get(fname)
+    if ent is None:
+        ent = _archivos_rotados().get(fname)
+    return ent
+
+
 # ─── Write-back to the sidecar (Fortemi → KOReader) ───
 
 def _escribir_note_en(sdr_path, book, key, transcripcion):
@@ -649,18 +703,44 @@ def _escribir_note_en(sdr_path, book, key, transcripcion):
     return True
 
 
+def _quitar_bloque_note(note, transcripcion):
+    """Removes exactly one transcription block from a possibly concatenated
+    note. Returns the new note, or None when the block cannot be located, in
+    which case nothing is removed. A manual note that preceded the block is
+    preserved."""
+    t = (transcripcion or "").strip()
+    if not t or not note:
+        return None
+    i = note.find(t)
+    if i < 0:
+        return None
+    firma = "\n\n**Segments**: 0"
+    ini = note.rfind(firma, 0, i)
+    if ini < 0:
+        ini = i  # no block marker: cut from where the transcription starts
+    fin = note.find(firma, i + len(t))
+    if fin < 0:
+        fin = len(note)
+    return (note[:ini] + note[fin:]).strip("\n")
+
+
 def enriquecer_nota_audio(note_id, entry):
     """The audio's note in Fortemi receives the book tag and the highlight's
     quote (with chapter/page) — replaces the retired inferred quotation.
-    Each step has its own try: a bounced tag no longer kills the quote."""
+    Each step has its own try: a bounced tag no longer kills the quote.
+    Idempotency is decided by the quote's own text, never by its footer.
+    Returns what it repaired: {'tag': bool, 'cita': bool}."""
     book, hl = entry["book"], entry["hl"]
     ta = title_author_del_libro(book)
     tag = tag_para_libro(book)
+    reparado = {"tag": False, "cita": False}
     try:
         note_data = get_note(note_id)
         existing = note_data.get("tags", [])
         if tag not in existing:
             set_tags(note_id, existing + [tag])
+            reparado["tag"] = True
+            log.info("Tag reparado en %s: %s", note_id, tag)
     except Exception as e:
         detalle = getattr(e, "response", None)
         cuerpo = detalle.text[:200] if detalle is not None else ""
@@ -668,12 +748,16 @@ def enriquecer_nota_audio(note_id, entry):
                     str(e)[:120], cuerpo, note_id)
     try:
         current = get_transcription(note_id)
-        if ta in (current or ""):
-            return  # already enriched
+        aguja = (hl.get("text") or "").strip()[:120]
+        if aguja and aguja in (current or ""):
+            return reparado  # the quote is already there, whatever its footer says
         append_cita_libro(note_id, hl.get("text", ""), ta,
                           hl.get("chapter", "") or "", hl.get("pageno"))
+        reparado["cita"] = True
+        log.info("Cita reparada en %s", note_id)
     except Exception as e:
         log.warning("Cita en enriquecer falló: %s", e)
+    return reparado
 
 
 def crear_nota_manual(annotation, book):
@@ -698,9 +782,10 @@ def crear_nota_manual(annotation, book):
 # ─── The crossing: pending audios × eligible highlights ───
 
 def procesar_audios_pendientes(state):
-    """Called on audio completion and on sidecar reconciliation. Each
-    unassigned audio is matched against eligible highlights
-    (awaiting_audio, manual, filled) by window + global LIFO."""
+    """Speed layer. Called on audio completion and on sidecar reconciliation.
+    Each unassigned audio is matched against eligible highlights
+    (awaiting_audio, manual, filled) by window + global LIFO. The time join
+    is the authority; this only closes the gap in seconds."""
     with _pendientes_lock:
         try:
             asignados = []
@@ -777,15 +862,16 @@ def reintentar_write(key, book, sdr_path, state):
     """filled but no note in the file → KOReader stomped the write-back
     (the book was open when the note arrived and dumped its memory on
     close). failed_write revives after the cooldown: each stomp is a real
-    file change, not an autonomous loop."""
+    file change, not an autonomous loop.
+    Returns True if the note was (re)written, False otherwise."""
     with conciliacion.registro() as reg:
         e = reg["highlights"].get(key)
         if not e or e["state"] not in ("filled_from_fortemi", "failed_write"):
-            return
+            return False
         if e["state"] == "failed_write":
             last = _parse_ts_utc(e.get("last_attempt"))
             if last and (datetime.now(timezone.utc) - last) < timedelta(minutes=FAILED_WRITE_COOLDOWN_MIN):
-                return  # still in cooldown
+                return False  # still in cooldown
             e["state"] = "filled_from_fortemi"
             e["attempts"] = 0
         if e["attempts"] >= WRITE_CAP:
@@ -793,7 +879,7 @@ def reintentar_write(key, book, sdr_path, state):
             e["reason"] = "write-back pisado x%d" % WRITE_CAP
             e["last_attempt"] = now_iso()
             log.error("Write-back pisado %d veces (cap): %s", WRITE_CAP, key)
-            return
+            return False
         e["attempts"] += 1
         e["last_attempt"] = now_iso()
         intento = e["attempts"]
@@ -801,9 +887,7 @@ def reintentar_write(key, book, sdr_path, state):
         note_inicial = e["hl"].get("note_inicial", "")
     partes = []
     for fname in audio_files:
-        ent = state.get(fname)
-        if ent is None:
-            ent = _archivos_rotados().get(fname)
+        ent = _resolver_audio(state, fname)
         if ent and ent.get("note_id") and ent.get("status") == "completed":
             try:
                 t = get_transcription(ent["note_id"])
@@ -813,7 +897,7 @@ def reintentar_write(key, book, sdr_path, state):
                 continue
     if not partes:
         log.warning("Reintento sin transcripciones: %s", key)
-        return
+        return False
     sdr_path = Path(sdr_path)
     with lock_sidecar(str(sdr_path)):
         data, header = sidecars.leer_sidecar(sdr_path)
@@ -830,7 +914,7 @@ def reintentar_write(key, book, sdr_path, state):
                 if e3:
                     e3["state"] = "done_empty"
                     e3["reason"] = "anotacion_borrada"
-            return
+            return False
         target["note"] = conciliacion.componer_note(
             conciliacion.componer_note("", note_inicial), "\n\n".join(partes))
         target["datetime_updated"] = datetime.now(TZ_DISPOSITIVO).strftime(
@@ -843,6 +927,7 @@ def reintentar_write(key, book, sdr_path, state):
             e4["attempts"] = 0
     log.info("Write-back re-escrito tras pisado (intento %d/%d): %s",
              intento, WRITE_CAP, key)
+    return True
 
 
 # ─── Reconcile one sidecar (trigger: the .lua changed) ───
@@ -920,13 +1005,15 @@ def conciliar_libro(sdr_path, state, catalogo_libros):
                 reintentar_write(key, book, sdr_path, state)
         actualizar_baseline_sidecar(sdr_path)
         procesar_audios_pendientes(state)
+        # a late .lua changes the relation: recompute it now, not in 10 minutes
+        reconciliar_por_tiempo(state)
     except Exception as e:
         log.error("Conciliar %s falló: %s", sdr_path.name, e)
 
 
 def inicializar_registro_highlights():
     """First start: everything already on disk → done_empty.
-    Nothing retroactive; the system is born clean."""
+    Nothing retroactive; the registry is born clean."""
     items = []
     for sdr in sidecars.buscar_sidecars(LIBROS_SYNC_DIR):
         try:
@@ -974,6 +1061,233 @@ def revivir_failed_transitorios(state):
         log.info("%d failed transitorios revividos (archivo presente)", n)
         save_state_locked(state)
     return n
+
+
+# ════════════════════════════════════════════════════════════
+# THE TIME JOIN — the authority
+# ════════════════════════════════════════════════════════════
+
+def _universo_highlights():
+    """X: every highlight in every .lua after the cutoff, with its datetime
+    and its current note. Nothing is filtered by state: the .lua is the fact."""
+    out = {}
+    for sdr in sidecars.buscar_sidecars(LIBROS_SYNC_DIR):
+        try:
+            data, _h = sidecars.leer_sidecar(sdr)
+            anns_key, anns = sidecars.anotaciones_de(data)
+            if not anns_key:
+                continue
+            book = info_del_libro(data, sdr)
+            if not book["md5"]:
+                continue
+            for _idx, a in anns.items():
+                if not isinstance(a, dict) or not a.get("datetime"):
+                    continue
+                if conciliacion.fue_preexistente(a.get("datetime"), NO_RETROACTIVIDAD):
+                    continue
+                dt_iso = sidecars.dt_local_a_utc_iso(a.get("datetime"), TZ_DISPOSITIVO)
+                if conciliacion.parse_dt_utc(dt_iso) is None:
+                    continue
+                key = conciliacion.key_para(book["md5"], a)
+                out[key] = {
+                    "book": book,
+                    "ann": a,
+                    "dt_iso": dt_iso,
+                    "note": a.get("note") or "",
+                    "sdr_path": str(sdr),
+                }
+        except Exception as e:
+            log.warning("Universo highlights: %s falló: %s", sdr.name, e)
+    return out
+
+
+def _anotar_en_registro(state, X, asignado):
+    """Audit only: record what the join decided. Nothing reads this to decide."""
+    try:
+        with conciliacion.registro() as reg:
+            for fn, key in asignado.items():
+                v = X[key]
+                e = reg["highlights"].get(key)
+                if e is None:
+                    e = conciliacion.agregar(reg, key, v["book"], v["ann"],
+                                             "filled_from_fortemi", v["dt_iso"],
+                                             VENTANA_MINUTOS)
+                if e is None:
+                    continue
+                if fn not in e["audios"]:
+                    e["audios"].append(fn)
+                manual = (e["hl"].get("note_inicial") or "").strip()
+                e["state"] = "manual" if manual else "filled_from_fortemi"
+                e["updated"] = now_iso()
+                k_vieja = reg["audios_asignados"].get(fn)
+                if k_vieja and k_vieja != key:
+                    e_v = reg["highlights"].get(k_vieja)
+                    if e_v and fn in e_v["audios"]:
+                        e_v["audios"].remove(fn)
+                reg["audios_asignados"][fn] = key
+    except Exception as e:
+        log.warning("Anotar en registro falló: %s", e)
+
+
+def reconciliar_por_tiempo(state):
+    """The join. X = highlights of the .lua files, Y = completed audios of
+    state.json with their real recording date. Each audio belongs to the
+    highlight whose window contains it (5 minutes, LIFO when several do).
+    Only the difference between what is and what should be is written:
+      - the transcription into the highlight's note
+      - a transcription sitting in a highlight it does not belong to is removed
+      - the quote and the tag into the audio's note
+    No difference, no write. Nothing is decided by states or by
+    audios_asignados: they are audit."""
+    with _reconcile_lock:
+        X = _universo_highlights()
+        if not X:
+            return
+        elegibles = [(k, {"hl": {"dt_utc": v["dt_iso"],
+                                 "ventana_min": VENTANA_MINUTOS}})
+                     for k, v in X.items()]
+        Y = audios_disponibles(state)
+        if not Y:
+            return
+        log.info("Tiempo: cruce iniciado (%d highlights × %d audios)",
+                 len(X), len(Y))
+
+        asignado = {}
+        transcripciones = {}
+        for au in Y:
+            key = conciliacion.elegir_highlight(au["ts"], elegibles,
+                                                VENTANA_MINUTOS)
+            if key is None:
+                continue
+            try:
+                nd = get_note(au["note_id"])
+            except Exception as e:
+                log.warning("Tiempo: nota %s ilegible: %s", au["note_id"], e)
+                continue
+            content = (nd.get("original") or {}).get("content") or ""
+            t = transcripcion_sin_cita(content).strip()
+            if not t:
+                continue
+            asignado[au["filename"]] = key
+            transcripciones[au["filename"]] = {
+                "note_id": au["note_id"],
+                "texto": t,
+                "tags": nd.get("tags") or [],
+                "content": content,
+            }
+
+        if not asignado:
+            log.info("Tiempo: sin diferencias (ningún audio en ventana)")
+            return
+
+        por_key = {}
+        for fn, key in asignado.items():
+            por_key.setdefault(key, []).append(fn)
+
+        # what each .lua needs: written blocks, removed blocks
+        quiere_nota = {}    # sdr_path -> [(key, md5, texto)]
+        quiere_quitar = {}  # sdr_path -> [(key, md5, texto)]
+        for key, v in X.items():
+            note = v["note"]
+            deben = por_key.get(key, [])
+            for fn in deben:
+                t = transcripciones[fn]["texto"]
+                if t[:AGUJA_IA] not in note:
+                    quiere_nota.setdefault(v["sdr_path"], []).append(
+                        (key, v["book"]["md5"], t))
+            for fn, d in transcripciones.items():
+                if fn in deben:
+                    continue
+                t = d["texto"]
+                if t and t[:AGUJA_IA] in note:
+                    quiere_quitar.setdefault(v["sdr_path"], []).append(
+                        (key, v["book"]["md5"], t))
+
+        puestas = quitadas = 0
+        libros = set(quiere_nota) | set(quiere_quitar)
+        for sdr_str in libros:
+            sdr = Path(sdr_str)
+            if not sdr.exists():
+                continue
+            try:
+                with lock_sidecar(sdr_str):
+                    data, header = sidecars.leer_sidecar(sdr)
+                    anns_key, anns = sidecars.anotaciones_de(data)
+                    if not anns_key:
+                        continue
+                    cambiado = False
+                    # removals first: never leave the same text twice
+                    for key, md5, t in quiere_quitar.get(sdr_str, []):
+                        target = _buscar_anotacion(anns, md5, key)
+                        if target is None:
+                            continue
+                        nuevo = _quitar_bloque_note(target.get("note", "") or "", t)
+                        if nuevo is None:
+                            log.warning("Tiempo: no localizo bloque a quitar en %s",
+                                        key)
+                            continue
+                        if nuevo:
+                            target["note"] = nuevo
+                        else:
+                            target.pop("note", None)
+                        target["datetime_updated"] = datetime.now(
+                            TZ_DISPOSITIVO).strftime("%Y-%m-%d %H:%M:%S")
+                        cambiado = True
+                        quitadas += 1
+                        log.info("Tiempo: nota retirada de %s", key)
+                    for key, md5, t in quiere_nota.get(sdr_str, []):
+                        target = _buscar_anotacion(anns, md5, key)
+                        if target is None:
+                            log.info("Tiempo: anotación ya no existe en %s", key)
+                            continue
+                        target["note"] = conciliacion.componer_note(
+                            target.get("note", ""), t)
+                        target["datetime_updated"] = datetime.now(
+                            TZ_DISPOSITIVO).strftime("%Y-%m-%d %H:%M:%S")
+                        cambiado = True
+                        puestas += 1
+                        log.info("Tiempo: nota escrita en %s", key)
+                    if cambiado:
+                        data["annotations_externally_modified"] = True
+                        sidecars.escribir_sidecar(sdr, data, header,
+                                                  SIDECAR_BACKUP_DIR)
+            except Exception as e:
+                log.warning("Tiempo: %s falló: %s", sdr.name, e)
+
+        # Fortemi side: tag and quote, only where they are missing or wrong
+        tags_puestos = citas_puestas = citas_corregidas = 0
+        for fn, key in asignado.items():
+            v = X[key]
+            d = transcripciones[fn]
+            ta = title_author_del_libro(v["book"])
+            tag = tag_para_libro(v["book"])
+            try:
+                if tag not in d["tags"]:
+                    set_tags(d["note_id"], d["tags"] + [tag])
+                    d["tags"].append(tag)
+                    tags_puestos += 1
+                    log.info("Tiempo: tag en %s: %s", d["note_id"], tag)
+                aguja = (v["ann"].get("text") or "").strip()[:120]
+                if aguja and aguja in d["content"]:
+                    continue
+                if "\n\n> " in d["content"]:
+                    sustituir_cita_libro(d["note_id"], v)
+                    citas_corregidas += 1
+                    log.info("Tiempo: cita corregida en %s", d["note_id"])
+                else:
+                    append_cita_libro(d["note_id"], v["ann"].get("text", ""), ta,
+                                      v["ann"].get("chapter", "") or "",
+                                      v["ann"].get("pageno"))
+                    citas_puestas += 1
+                    log.info("Tiempo: cita en %s", d["note_id"])
+            except Exception as e:
+                log.warning("Tiempo: Fortemi en %s falló: %s", d["note_id"], e)
+
+        _anotar_en_registro(state, X, asignado)
+        log.info("Tiempo: %d audios en ventana · %d notas .lua escritas · "
+                 "%d retiradas · %d tags · %d citas · %d citas corregidas",
+                 len(asignado), puestas, quitadas, tags_puestos,
+                 citas_puestas, citas_corregidas)
 
 
 # ─── Audio processing ───
@@ -1287,10 +1601,12 @@ def main():
     log.info("  Max workers:    %d", MAX_WORKERS)
     log.info("  Ventana:        %d min · Corte: %s",
              VENTANA_MINUTOS, NO_RETROACTIVIDAD.date())
+    log.info("  Cruce temporal: cada %ds", RECONCILE_INTERVAL)
     log.info("=" * 60)
 
     last_libro_scan = 0.0
     last_sidecar_scan = 0.0
+    last_reconcile = 0.0  # first join runs right after startup
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         active = {}  # {future: label}
@@ -1324,6 +1640,11 @@ def main():
                                                  state, catalogo_libros)
                         active[future] = tag_name
                         log.info("Sidecar changed → conciliando: %s", sdr.name)
+
+                # the time join
+                if time.time() - last_reconcile >= RECONCILE_INTERVAL:
+                    last_reconcile = time.time()
+                    reconciliar_por_tiempo(state)
 
                 # Submit new audios if there is capacity
                 if len(active) < MAX_WORKERS:
