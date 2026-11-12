@@ -1,36 +1,36 @@
 """
-Daemon de captura + conciliación: Dictados → Fortemi ⇄ KOReader
-Watcher + uploader + waiter + conciliador de sidecars.
-La cascada es de Fortemi. Paralelizado con ThreadPoolExecutor.
+Capture + reconciliation daemon: Dictados → Fortemi ⇄ KOReader
+Watcher + uploader + waiter + sidecar reconciler.
+The cascade belongs to Fortemi. Parallelized with ThreadPoolExecutor.
 
-Pipeline de audios (igual que siempre):
+Audio pipeline (same as always):
   1. Poll /dictados/
-  2. ffprobe: duración, formato. Si <mínimo: cortos. Si 3GPP: re-mux M4A.
+  2. ffprobe: duration, format. Below minimum: audios-cortos. If 3GPP: re-mux to M4A.
   3. POST /notes {pipeline:[], revision_mode:"none", document_type:"voice-memo-semantic"}
   4. SQL UPDATE created_at_utc
   5. POST /notes/{id}/attachments/upload
-  6. wait_for_jobs (sin timeout, Fortemi maneja con JOB_TIMEOUT_SECS)
-  7. GET /jobs?status=failed — anotar cuáles fallaron
-  8. Book detection tag-only (el quotation inferencial está jubilado)
+  6. wait_for_jobs (no timeout, Fortemi handles it with JOB_TIMEOUT_SECS)
+  7. GET /jobs?status=failed — note which ones failed
+  8. Book detection, tag only (the inferred quotation is retired)
   9. POST /notes/{id}/reprocess {steps, revision_mode:"full"}
   10. wait_for_jobs
-  11. Mover a procesados
+  11. Move to audios-procesados
   12. state=completed
-  13. Conciliación: este audio puede llenar un highlight en espera
+  13. Reconciliation: this audio may fill a highlight that was waiting
 
-Conciliación de sidecars:
+Sidecar reconciliation:
   S1. Poll /libros-sync/**.sdr/metadata.*.lua (mtime+size vs baseline)
-  S2. Cambio = libro cerrado en algún dispositivo → conciliar:
-      - highlight nuevo con nota manual → nota en Fortemi  [KOReader → Fortemi]
-      - highlight nuevo sin nota → awaiting_audio
-      - filled/failed_write pero sin note en archivo → pisado → reintento
-        (cap WRITE_CAP; failed_write revive tras cooldown)
-  S3. Audios completos no asignados vs highlights elegibles:
-      ventana 5 min + LIFO → transcripción al note del highlight
-      [Fortemi → KOReader] + tag del libro y cita en la nota del audio
-  S4. El propio write-back cambia el .sdr → el watcher re-dispara → no-op
-      (autocuración). Si KOReader pisa (libro abierto al llegar la nota),
-      cada pisada es un cambio real → reintento con cap y cooldown.
+  S2. Change = book closed on some device → reconcile:
+      - new highlight with manual note → note in Fortemi  [KOReader → Fortemi]
+      - new highlight without note → awaiting_audio
+      - filled/failed_write but no note in file → stomped → retry
+        (cap WRITE_CAP; failed_write revives after a cooldown)
+  S3. Completed unassigned audios vs eligible highlights:
+      5-minute window + LIFO → transcription into the highlight's note
+      [Fortemi → KOReader] + book tag and quote into the audio's note
+  S4. The write-back itself changes the .sdr → the watcher re-triggers → no-op
+      (self-healing). If KOReader stomps it (book open when the note arrives),
+      each stomp is a real file change → retry with cap and cooldown.
 """
 
 import os
@@ -64,15 +64,15 @@ STATE_DIR = Path("/protesis/estado")
 STATE_FILE = STATE_DIR / "state.json"
 LIBROS_DIR = Path("/libros")
 
-# conciliación de sidecars
+# sidecar reconciliation
 LIBROS_SYNC_DIR = Path(os.environ.get("LIBROS_SYNC_DIR", "/libros-sync"))
-SIDECAR_STATE_FILE = STATE_DIR / "sidecars.json"      # baseline mtime+size por .lua
-SIDECAR_BACKUP_DIR = STATE_DIR / "sidecar_backups"    # backups de write-back
+SIDECAR_STATE_FILE = STATE_DIR / "sidecars.json"      # mtime+size baseline per .lua
+SIDECAR_BACKUP_DIR = STATE_DIR / "sidecar_backups"    # write-back backups
 VENTANA_MINUTOS = int(os.environ.get("VENTANA_MINUTOS", "5"))
-NO_RETROACTIVIDAD = datetime(2026, 10, 1)  # hora local; antes de aquí → done_empty
+NO_RETROACTIVIDAD = datetime(2026, 10, 1)  # local time; before this → done_empty
 POLL_INTERVAL_SIDECARS = int(os.environ.get("POLL_INTERVAL_SIDECARS", "10"))
-WRITE_CAP = 3  # reintentos de write-back antes de failed_write
-FAILED_WRITE_COOLDOWN_MIN = 30  # minutos antes de revivir un failed_write
+WRITE_CAP = 3  # write-back retries before failed_write
+FAILED_WRITE_COOLDOWN_MIN = 30  # minutes before a failed_write revives
 
 FORTEMI_API = "http://matric-api:3000/api/v1"
 POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "postgres")
@@ -90,8 +90,17 @@ MAX_WORKERS = int(os.environ.get("MAX_WORKERS", "3"))
 
 REPROCESS_STEPS = ["metadata_extraction", "reference_extraction", "ai_revision"]
 
-# zona de los dispositivos que graban: la hora de los filenames es hora local de aquí
+# timezone of the recording devices: filenames carry local time here
 TZ_DISPOSITIVO = ZoneInfo(os.environ.get("TZ_DISPOSITIVO", "Europe/Madrid"))
+
+# deferred retry for network failures: 1, 5, 15, 30 min; then it stays at 30
+RETRY_BACKOFF_SECS = (60, 300, 900, 1800)
+PATRONES_TRANSITORIOS = ("connection", "timed out", "timeout",
+                         "httpconnectionpool", "newconnectionerror")
+# how long to wait for the API at startup before giving up
+API_WAIT_TIMEOUT = int(os.environ.get("API_WAIT_TIMEOUT", "300"))
+# Fortemi rejects tags over this length, verified by replication
+TAG_MAX_LEN = 100
 
 # ─── Logging ───
 logging.basicConfig(
@@ -104,14 +113,14 @@ log = logging.getLogger(__name__)
 # ─── Thread-safe state ───
 state_lock = threading.Lock()
 
-# locks de conciliación
+# reconciliation locks
 _pendientes_lock = threading.Lock()
 _sidecar_locks = {}
 _sidecar_locks_guard = threading.Lock()
 _sidecar_state = {}
 _sidecar_state_lock = threading.Lock()
 
-# ─── DB (set_timestamp y cita de highlight) ───
+# ─── DB (set_timestamp and highlight quote) ───
 def db_query(query, params=None):
     conn = psycopg2.connect(
         host=POSTGRES_HOST, port=POSTGRES_PORT,
@@ -134,8 +143,8 @@ def set_timestamp(note_id, timestamp):
     )
 
 def append_cita_libro(note_id, cita, title_author, chapter="", pageno=None):
-    """Cita con contexto del highlight (capítulo/página vienen del sidecar).
-    Formato del daemon conservado + contexto."""
+    """Quote with highlight context (chapter/page come from the sidecar).
+    Daemon format preserved + context."""
     contexto = ""
     if chapter:
         contexto += f", cap. {chapter}"
@@ -159,8 +168,8 @@ def create_note():
     return r.json()["id"]
 
 def create_text_note(content):
-    """Nota de texto (highlight manual → Fortemi). Sin document_type:
-    el reprocess lo infiere (document_type_inference)."""
+    """Text note (manual highlight → Fortemi). No document_type:
+    reprocess infers it (document_type_inference)."""
     r = requests.post(f"{FORTEMI_API}/notes", json={
         "content": content,
         "pipeline": [],
@@ -258,6 +267,34 @@ def wait_for_jobs(note_id, label=""):
         time.sleep(2)
 
 
+# ─── Do not process until the API is listening ───
+def wait_for_api():
+    """On a cold stack start the API may not be listening yet; processing
+    before it does condemns audios to permanent 'failed'. Any HTTP response
+    counts as 'API alive' (even 404): what matters is that the port answers."""
+    url = FORTEMI_API.rsplit("/api/v1", 1)[0] + "/health"
+    start = time.time()
+    last_log = -30.0
+    while True:
+        try:
+            r = requests.get(url, timeout=3)
+            if r.status_code < 500:
+                log.info("API lista (HTTP %d, %ds tras arranque del daemon)",
+                         r.status_code, int(time.time() - start))
+                return True
+        except requests.exceptions.RequestException:
+            pass
+        elapsed = time.time() - start
+        if elapsed >= API_WAIT_TIMEOUT:
+            log.warning("API no respondió en %ds; sigo igual "
+                        "(retry_wait cubre los fallos)", API_WAIT_TIMEOUT)
+            return False
+        if elapsed - last_log >= 30:
+            last_log = elapsed
+            log.info("Esperando a matric-api... (%ds)", int(elapsed))
+        time.sleep(2)
+
+
 # ─── Audio helpers ───
 def get_duration(audio_path):
     try:
@@ -336,10 +373,68 @@ def sanitize_tag(text):
     return f"book/{result.strip('-')}"
 
 
-# ─── Book detection (tag-only: quotation jubilado) ───
+# ─── Book tag with three fallbacks ───
+def tag_para_libro(book, libro_path=None):
+    """Title+authors → filename → word-wise truncation. Fortemi rejects tags
+    over 100 chars (verified: 400 "Tag exceeds 100 character limit"), and a
+    bounced tag must never kill the quote that comes after it."""
+    tag = sanitize_tag(title_author_del_libro(book))
+    if len(tag) <= TAG_MAX_LEN:
+        return tag
+    stem = None
+    if libro_path:
+        stem = Path(libro_path).stem
+    elif book.get("sdr_path"):
+        stem = Path(book["sdr_path"]).parent.name.removesuffix(".sdr")
+    if stem:
+        tag = sanitize_tag(stem)
+        if len(tag) <= TAG_MAX_LEN:
+            log.info("Tag >%d chars → fallback a nombre de archivo: %s",
+                     TAG_MAX_LEN, tag)
+            return tag
+    # last resort: word-wise truncation (hyphen-separated) keeping the prefix
+    log.warning("Tag >%d chars incluso con nombre de archivo, truncando: %s",
+                TAG_MAX_LEN, tag)
+    prefix = "book/"
+    cuerpo = tag[len(prefix):] if tag.startswith(prefix) else tag
+    out, total = [], len(prefix)
+    for parte in cuerpo.split("-"):
+        extra = len(parte) + (1 if out else 0)
+        if total + extra > TAG_MAX_LEN:
+            break
+        out.append(parte)
+        total += extra
+    if out:
+        return prefix + "-".join(out)
+    return tag[:TAG_MAX_LEN]
+
+
+# ─── Re-injection travels without the quote ───
+def transcripcion_sin_cita(transcripcion):
+    """Cut at the quote signature the daemon itself appends to the original
+    ('\n\n> {quote}\n> — *{title}'). The quote already lives in the highlight:
+    it is its own text, so it must not travel again inside the .lua note."""
+    if not transcripcion:
+        return transcripcion or ""
+    j = transcripcion.find("\n> — *")  # the daemon's unique signature
+    if j < 0:
+        return transcripcion
+    i = transcripcion.rfind("\n\n> ", 0, j)
+    if i < 0:
+        return transcripcion
+    return transcripcion[:i].rstrip()
+
+
+def es_error_transitorio(err_str):
+    """Network-ish errors are not a verdict on the file."""
+    e = (err_str or "").lower()
+    return any(p in e for p in PATRONES_TRANSITORIOS)
+
+
+# ─── Book detection (tag only: quotation retired) ───
 def process_book_detection(note_id, transcription, catalogo_libros):
-    """Detección de libro solo para el tag. Sin cita, sin embeddings:
-    el quotation inferencial está jubilado (cajas negras 03/04)."""
+    """Book detection for the tag only. No quote, no embeddings: the inferred
+    quotation is retired (black boxes 03/04)."""
     if not transcription or not transcription.strip():
         return None
     try:
@@ -357,7 +452,9 @@ def process_book_detection(note_id, transcription, catalogo_libros):
             libro_path = encontrar_libro(libro, root)
             if libro_path:
                 break
-    tag = sanitize_tag(libro_path.stem) if libro_path else sanitize_tag(libro)
+    # the referenced title may exceed the tag limit; fall back to the filename
+    book_ref = {"title": libro, "authors": "", "sdr_path": None}
+    tag = tag_para_libro(book_ref, libro_path)
     try:
         note_data = get_note(note_id)
         existing_tags = note_data.get("tags", [])
@@ -413,7 +510,7 @@ def now_iso():
 
 
 # ════════════════════════════════════════════════════════════
-# SIDECARS Y CONCILIACIÓN
+# SIDECARS AND RECONCILIATION
 # ════════════════════════════════════════════════════════════
 
 def lock_sidecar(path_str):
@@ -480,9 +577,9 @@ def title_author_del_libro(book):
     return book["title"]
 
 
-# ─── Audios disponibles (activos + rotados) ───
+# ─── Available audios (active + rotated) ───
 
-_archivados_cache = None  # (frozenset_archivos, dict_merged)
+_archivados_cache = None  # (files_frozenset, merged_dict)
 
 
 def _archivos_rotados():
@@ -527,11 +624,12 @@ def audios_disponibles(state):
     return out
 
 
-# ─── Write-back al sidecar (Fortemi → KOReader) ───
+# ─── Write-back to the sidecar (Fortemi → KOReader) ───
 
 def _escribir_note_en(sdr_path, book, key, transcripcion):
-    """Relee el .sdr FRESH, localiza la anotación por identidad, escribe note.
-    La nota manual previa (si existe) se conserva por concatenación — el borde."""
+    """Re-reads the .sdr FRESH, locates the annotation by identity, writes note.
+    A previous manual note is preserved by concatenation — the edge."""
+    transcripcion = transcripcion_sin_cita(transcripcion)
     data, header = sidecars.leer_sidecar(sdr_path)
     anns_key, anns = sidecars.anotaciones_de(data)
     if not anns_key:
@@ -542,7 +640,7 @@ def _escribir_note_en(sdr_path, book, key, transcripcion):
             target = a
             break
     if target is None:
-        return False  # la anotación fue borrada
+        return False  # the annotation was deleted
     target["note"] = conciliacion.componer_note(target.get("note", ""), transcripcion)
     target["datetime_updated"] = datetime.now(TZ_DISPOSITIVO).strftime("%Y-%m-%d %H:%M:%S")
     data["annotations_externally_modified"] = True
@@ -552,42 +650,57 @@ def _escribir_note_en(sdr_path, book, key, transcripcion):
 
 
 def enriquecer_nota_audio(note_id, entry):
-    """La nota del audio en Fortemi recibe el tag del libro y la cita del
-    highlight (con capítulo/página) — reemplaza al quotation inferencial."""
+    """The audio's note in Fortemi receives the book tag and the highlight's
+    quote (with chapter/page) — replaces the retired inferred quotation.
+    Each step has its own try: a bounced tag no longer kills the quote."""
     book, hl = entry["book"], entry["hl"]
     ta = title_author_del_libro(book)
-    tag = sanitize_tag(ta)
-    note_data = get_note(note_id)
-    existing = note_data.get("tags", [])
-    if tag not in existing:
-        set_tags(note_id, existing + [tag])
-    current = get_transcription(note_id)
-    if ta in (current or ""):
-        return  # ya enriquecida
-    append_cita_libro(note_id, hl.get("text", ""), ta,
-                      hl.get("chapter", "") or "", hl.get("pageno"))
+    tag = tag_para_libro(book)
+    try:
+        note_data = get_note(note_id)
+        existing = note_data.get("tags", [])
+        if tag not in existing:
+            set_tags(note_id, existing + [tag])
+    except Exception as e:
+        detalle = getattr(e, "response", None)
+        cuerpo = detalle.text[:200] if detalle is not None else ""
+        log.warning("Tag en enriquecer falló (%s | %s) — la cita se escribe igual: %s",
+                    str(e)[:120], cuerpo, note_id)
+    try:
+        current = get_transcription(note_id)
+        if ta in (current or ""):
+            return  # already enriched
+        append_cita_libro(note_id, hl.get("text", ""), ta,
+                          hl.get("chapter", "") or "", hl.get("pageno"))
+    except Exception as e:
+        log.warning("Cita en enriquecer falló: %s", e)
 
 
 def crear_nota_manual(annotation, book):
-    """KOReader → Fortemi: highlight con nota manual → nota en Fortemi."""
+    """KOReader → Fortemi: highlight with manual note → note in Fortemi.
+    A bounced tag no longer kills the reprocess."""
     note_id = create_text_note(annotation.get("note", ""))
     append_cita_libro(note_id, annotation.get("text", ""),
                       title_author_del_libro(book),
                       annotation.get("chapter", "") or "", annotation.get("pageno"))
-    tag = sanitize_tag(title_author_del_libro(book))
-    existing = get_note(note_id).get("tags", [])
-    if tag not in existing:
-        set_tags(note_id, existing + [tag])
-    reprocess(note_id)  # asíncrono: mismo tratamiento que los audios
+    tag = tag_para_libro(book)
+    try:
+        existing = get_note(note_id).get("tags", [])
+        if tag not in existing:
+            set_tags(note_id, existing + [tag])
+    except Exception as e:
+        log.warning("Tag en nota manual falló (%s) — el reprocess corre igual: %s",
+                    str(e)[:120], note_id)
+    reprocess(note_id)  # async: same treatment as audios
     return note_id
 
 
-# ─── El cruce: audios pendientes × highlights elegibles ───
+# ─── The crossing: pending audios × eligible highlights ───
 
 def procesar_audios_pendientes(state):
-    """Se llama al completar un audio y al conciliar un sidecar.
-    Cada audio no asignado se cruza contra los highlights elegibles
-    (awaiting_audio, manual, filled) por ventana + LIFO global."""
+    """Called on audio completion and on sidecar reconciliation. Each
+    unassigned audio is matched against eligible highlights
+    (awaiting_audio, manual, filled) by window + global LIFO."""
     with _pendientes_lock:
         try:
             asignados = []
@@ -617,7 +730,7 @@ def procesar_audios_pendientes(state):
                     log.warning("get_transcription falló: %s", e)
                     transcripcion = ""
                 if not transcripcion:
-                    # revertir asignación: el audio queda disponible para reintentos
+                    # revert assignment: the audio stays available for retries
                     with conciliacion.registro() as reg:
                         reg["audios_asignados"].pop(au["filename"], None)
                         hl = reg["highlights"].get(key)
@@ -658,13 +771,13 @@ def procesar_audios_pendientes(state):
             log.error("procesar_audios_pendientes falló: %s", e)
 
 
-# ─── Write-back pisado: reintento con cap y cooldown ───
+# ─── Stomped write-back: retry with cap and cooldown ───
 
 def reintentar_write(key, book, sdr_path, state):
-    """filled pero sin note en el archivo → KOReader pisó el write-back
-    (el libro se abrió antes de que llegara la nota y al cerrar volcó su
-    memoria). failed_write revive tras el cooldown: cada pisada es un cambio
-    real del archivo, no un bucle autónomo."""
+    """filled but no note in the file → KOReader stomped the write-back
+    (the book was open when the note arrived and dumped its memory on
+    close). failed_write revives after the cooldown: each stomp is a real
+    file change, not an autonomous loop."""
     with conciliacion.registro() as reg:
         e = reg["highlights"].get(key)
         if not e or e["state"] not in ("filled_from_fortemi", "failed_write"):
@@ -672,7 +785,7 @@ def reintentar_write(key, book, sdr_path, state):
         if e["state"] == "failed_write":
             last = _parse_ts_utc(e.get("last_attempt"))
             if last and (datetime.now(timezone.utc) - last) < timedelta(minutes=FAILED_WRITE_COOLDOWN_MIN):
-                return  # aún en cooldown
+                return  # still in cooldown
             e["state"] = "filled_from_fortemi"
             e["attempts"] = 0
         if e["attempts"] >= WRITE_CAP:
@@ -695,7 +808,7 @@ def reintentar_write(key, book, sdr_path, state):
             try:
                 t = get_transcription(ent["note_id"])
                 if t:
-                    partes.append(t)
+                    partes.append(transcripcion_sin_cita(t))
             except Exception:
                 continue
     if not partes:
@@ -732,7 +845,7 @@ def reintentar_write(key, book, sdr_path, state):
              intento, WRITE_CAP, key)
 
 
-# ─── Conciliar un sidecar (disparador: el .lua cambió) ───
+# ─── Reconcile one sidecar (trigger: the .lua changed) ───
 
 def conciliar_libro(sdr_path, state, catalogo_libros):
     sdr_path = Path(sdr_path)
@@ -782,7 +895,7 @@ def conciliar_libro(sdr_path, state, catalogo_libros):
                         acciones.append(("reintento", key, dict(a)))
                     elif (entry["state"] == "awaiting_audio"
                           and a.get("note")):
-                        # el usuario añadió nota manual a un highlight en espera
+                        # the user added a manual note to a waiting highlight
                         entry["hl"]["note_inicial"] = a["note"]
                         entry["state"] = "manual"
                         acciones.append(("manual", key, dict(a)))
@@ -812,8 +925,8 @@ def conciliar_libro(sdr_path, state, catalogo_libros):
 
 
 def inicializar_registro_highlights():
-    """Primer arranque: todo lo que ya existe en disco → done_empty.
-    Nada retroactivo; el sistema nace limpio."""
+    """First start: everything already on disk → done_empty.
+    Nothing retroactive; the system is born clean."""
     items = []
     for sdr in sidecars.buscar_sidecars(LIBROS_SYNC_DIR):
         try:
@@ -838,6 +951,29 @@ def inicializar_registro_highlights():
             log.warning("Inicializar %s falló: %s", sdr.name, e)
     n = conciliacion.inicializar(items, NO_RETROACTIVIDAD)
     log.info("Registro de highlights inicializado: %d preexistentes → done_empty", n)
+
+
+def revivir_failed_transitorios(state):
+    """'failed' entries whose cause was network and whose file is still in
+    the inbox go back to the retry queue. Orphans (already rescued by hand)
+    stay as harmless history: the scanner ignores them."""
+    n = 0
+    for filename, entry in state.items():
+        if entry.get("status") != "failed":
+            continue
+        errores = " ".join(entry.get("errors", []))
+        if not es_error_transitorio(errores):
+            continue
+        if not (DICTADOS_DIR / filename).exists():
+            continue
+        entry["status"] = "retry_wait"
+        entry["next_retry"] = now_iso()
+        entry["retry_count"] = 0
+        n += 1
+    if n:
+        log.info("%d failed transitorios revividos (archivo presente)", n)
+        save_state_locked(state)
+    return n
 
 
 # ─── Audio processing ───
@@ -928,7 +1064,7 @@ def process_audio(audio_path, catalogo_libros, state):
             s["step"] = "cascada_done"
             save_state_locked(state)
 
-        # Step 5: Book detection (tag only — el quotation inferencial está jubilado)
+        # Step 5: Book detection (tag only — the inferred quotation is retired)
         if s.get("step") == "cascada_done":
             transcription = get_transcription(note_id)
             if transcription:
@@ -971,11 +1107,26 @@ def process_audio(audio_path, catalogo_libros, state):
         save_state_locked(state)
         log.info("[%s] Completed", filename)
 
-        # Step 9: este audio puede llenar un highlight en espera
+        # Step 9: this audio may fill a highlight that was waiting
         try:
             procesar_audios_pendientes(state)
         except Exception as e:
             log.warning("[%s] Conciliación post-audio falló: %s", filename, e)
+
+    # a dead network/API is not a verdict on the file: deferred retry
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+        s["retry_count"] = s.get("retry_count", 0) + 1
+        espera = RETRY_BACKOFF_SECS[min(s["retry_count"] - 1,
+                                        len(RETRY_BACKOFF_SECS) - 1)]
+        s["status"] = "retry_wait"
+        s["errors"].append(f"transitorio: {str(e)[:150]}")
+        s["next_retry"] = (datetime.now(timezone.utc)
+                           + timedelta(seconds=espera)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        s["processed_at"] = now_iso()
+        save_state_locked(state)
+        log.warning("[%s] Fallo transitorio de red, reintento #%d en %ds: %s",
+                    filename, s["retry_count"], espera, str(e)[:120])
+        return
 
     except Exception as e:
         s["status"] = "failed"
@@ -994,7 +1145,12 @@ def retry_failed(state):
 
         note_id = entry.get("note_id")
         if not note_id:
-            log.warning("[%s] No note_id for retry", filename)
+            # entries that fell before note creation go back to the scan queue
+            entry["status"] = "retry_wait"
+            entry["next_retry"] = now_iso()
+            entry["retry_count"] = 0
+            log.info("[%s] Sin note_id → retry_wait (el escaneo lo retoma)", filename)
+            count += 1
             continue
 
         log.info("[%s] Retrying (was %s)...", filename, entry.get("status"))
@@ -1052,6 +1208,11 @@ def get_pending_audios(state):
             if status in ("completed", "failed", "skipped", "timeout",
                           "failed_extraction", "failed_cascade", "failed_reprocess"):
                 continue
+            # retry_wait respects its retry time
+            if status == "retry_wait":
+                next_retry = _parse_ts_utc(state[audio.name].get("next_retry"))
+                if next_retry and datetime.now(timezone.utc) < next_retry:
+                    continue
             pending.append(audio)
         else:
             if (AUDIOS_PROCESADOS_DIR / audio.name).exists():
@@ -1063,9 +1224,9 @@ def get_pending_audios(state):
     return pending
 
 def scan_libros(catalogo_libros):
-    """Refresca el catálogo de títulos en AMBOS volúmenes (catálogo + estante).
-    Sin embeddings: el quotation inferencial está jubilado y detectar_libro
-    solo necesita títulos."""
+    """Refreshes the title catalog in BOTH volumes (catalog + shelf).
+    No embeddings: the inferred quotation is retired and detectar_libro
+    only needs titles."""
     catalogo_libros.clear()
     for root in (LIBROS_DIR, LIBROS_SYNC_DIR):
         if root.exists():
@@ -1085,12 +1246,16 @@ def main():
 
     state = load_state()
 
+    # revive network-failed entries, then wait until the API is listening
+    revivir_failed_transitorios(state)
+    wait_for_api()
+
     if args.retry_failed:
         count = retry_failed(state)
         log.info("Retried %d failed entries", count)
         return
 
-    # conciliación: registro + baseline de sidecars
+    # reconciliation: registry + sidecar baseline
     conciliacion.configurar(STATE_DIR)
     load_sidecar_state()
     if not LIBROS_SYNC_DIR.exists():
@@ -1128,7 +1293,7 @@ def main():
     last_sidecar_scan = 0.0
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        active = {}  # {future: etiqueta}
+        active = {}  # {future: label}
 
         try:
             while True:
@@ -1136,7 +1301,7 @@ def main():
                     scan_libros(catalogo_libros)
                     last_libro_scan = time.time()
 
-                # Limpiar futures completados
+                # Clean completed futures
                 completed = [(f, fn) for f, fn in active.items() if f.done()]
                 for f, fn in completed:
                     del active[f]
@@ -1145,7 +1310,7 @@ def main():
                     except Exception as e:
                         log.error("[%s] Worker error: %s", fn, e)
 
-                # sidecars cambiados → conciliar
+                # changed sidecars → reconcile
                 if (LIBROS_SYNC_DIR.exists()
                         and time.time() - last_sidecar_scan >= POLL_INTERVAL_SIDECARS):
                     last_sidecar_scan = time.time()
@@ -1160,7 +1325,7 @@ def main():
                         active[future] = tag_name
                         log.info("Sidecar changed → conciliando: %s", sdr.name)
 
-                # Submit nuevos audios si hay capacidad
+                # Submit new audios if there is capacity
                 if len(active) < MAX_WORKERS:
                     pending = get_pending_audios(state)
                     processing_names = set(active.values())
